@@ -55,13 +55,17 @@ def cmd_sync(ns: argparse.Namespace) -> int:
 
     open_paths = list(ns.open_path or [])
     if ns.open:
-        photos = [p.name for p in sorted(Path(ns.a).rglob("*"))
-                  if p.is_file() and ".dial" not in p.parts]
+        # open photos from this day's changes first, as the daily task says
         man = A.scan()
-        cands = [e.path for e in man.entries
-                 if e.kind == PHOTO and not (B.root / e.path).exists()]
-        random.Random(ns.seed).shuffle(cands)
-        open_paths += cands[:ns.open]
+        fresh, older = [], []
+        for e in man.entries:
+            if e.kind != PHOTO or (B.root / e.path).exists():
+                continue
+            (fresh if not B.store.has_key(e.file_kid) else older).append(e.path)
+        rnd = random.Random(ns.seed)
+        rnd.shuffle(fresh)
+        rnd.shuffle(older)
+        open_paths += (fresh + older)[:ns.open]
 
     led = Ledger()
     res = Engine(A, B, led).sync(open_paths=open_paths)

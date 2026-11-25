@@ -175,14 +175,31 @@ class Engine:
         rec["checker"] = "fallback" if v.ok else "fail"
         rec["reason"] = v.reason
 
+    # -- the day's change set --------------------------------------------
+    def _snapshot_path(self) -> Path:
+        return self.a.state / "sent_manifest.json"
+
+    def _change_set(self, man: Manifest) -> Set[str]:
+        p = self._snapshot_path()
+        before = json.loads(p.read_text()) if p.exists() else {}
+        return {e.path for e in man.entries if before.get(e.path) != e.file_kid}
+
+    def _remember(self, man: Manifest) -> None:
+        p = self._snapshot_path()
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps({e.path: e.file_kid for e in man.entries}))
+
     # -- a whole day ------------------------------------------------------
     def sync(self, open_paths: Sequence[str] = ()) -> RunResult:
         man = self.a.scan()
         self.exchange_manifest(man)
         entries = man.by_path()
         files = {e.path: FileState(e.size, e.kind) for e in man.entries}
-        # measurement, not protocol: which files a full sync would send whole
-        changed = {e.path for e in man.entries if not self.b.store.has_key(e.file_kid)}
+        # Measurement, not protocol: what a full sync would send whole today.
+        # That is "new or changed since the last run", kept on A's own side -
+        # a full-sync tool holds every original, so a photo B chose to defer
+        # is not something it would send again tomorrow.
+        changed = self._change_set(man)
 
         library: List[router.Want] = []
         for e in man.entries:
@@ -209,6 +226,7 @@ class Engine:
             falls += self.run_plan(wants)
             t_open = (time.perf_counter() - t1) * 1000.0 / len(opened)
 
+        self._remember(man)
         rows = view.library(self.b, man)
         for r in rows:
             if r.path in files:

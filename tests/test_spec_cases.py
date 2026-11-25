@@ -182,6 +182,28 @@ def test_raw_sync_check(tmp_path):
     assert s["full_sync_bytes"] == real["bytes"]
 
 
+# 7b ----------------------------------------------------------------------
+def test_raw_sync_check_holds_on_a_second_day(tmp_path):
+    """The full-sync column has to keep matching once originals are deferred."""
+    a, b = devices(tmp_path)
+    for i in range(5):
+        photo(a.root / f"IMG_{i}.jpg", seed=500 + i)
+    doc = document(a.root / "doc.txt", lines=2000, seed=70)
+    mirror = tmp_path / "raw_mirror"
+
+    _, res, recs = run(a, b, open_paths=["IMG_0.jpg"])
+    assert sum(r["baseline_full_bytes"] for r in recs) == raw_sync(a.root, mirror)["bytes"]
+
+    photo(a.root / "IMG_new.jpg", seed=600)      # the next day's changes
+    edit_document(doc)
+    _, res2, recs2 = run(a, b, open_paths=["IMG_new.jpg"])
+
+    day2_logged = sum(r["baseline_full_bytes"] for r in recs2)
+    day2_real = raw_sync(a.root, mirror)
+    assert day2_real["files"] == 2               # one new photo, one edited doc
+    assert day2_logged == day2_real["bytes"]     # deferred originals are not re-counted
+
+
 # 8 -----------------------------------------------------------------------
 @pytest.mark.skipif(shutil.which("rsync") is None, reason="rsync not installed")
 def test_real_tool_run(tmp_path):
