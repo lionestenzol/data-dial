@@ -112,6 +112,34 @@ def cmd_rsync(ns: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_verify(ns: argparse.Namespace) -> int:
+    """Independent check: every original B holds is byte-exact, and every
+    other file in A's manifest is at least visible as a preview on B."""
+    import hashlib
+
+    A, B = make_devices(ns.a, ns.b)
+    man = A.scan()
+    exact = previews = missing = bad = 0
+    for e in man.entries:
+        tgt = B.root / e.path
+        if tgt.exists():
+            ha = hashlib.sha256((A.root / e.path).read_bytes()).hexdigest()
+            hb = hashlib.sha256(tgt.read_bytes()).hexdigest()
+            if ha == hb:
+                exact += 1
+            else:
+                bad += 1
+                print(f"MISMATCH {e.path}")
+        elif B.thumb_path(e.path).exists():
+            previews += 1
+        else:
+            missing += 1
+            print(f"MISSING  {e.path}")
+    print(f"{exact} originals byte-exact, {previews} previews, "
+          f"{missing} missing, {bad} mismatched, of {len(man.entries)} files")
+    return 1 if (bad or missing) else 0
+
+
 def cmd_report(ns: argparse.Namespace) -> int:
     records = jlog.read_jsonl(ns.log)
     real = None
@@ -149,6 +177,11 @@ def main(argv=None) -> int:
     p.add_argument("--a", required=True)
     p.add_argument("--mirror", required=True)
     p.set_defaults(fn=cmd_rsync)
+
+    p = sub.add_parser("verify", help="check B against A, independently")
+    p.add_argument("--a", required=True)
+    p.add_argument("--b", required=True)
+    p.set_defaults(fn=cmd_verify)
 
     p = sub.add_parser("report", help="re-print a summary from a log")
     p.add_argument("--log", required=True)
