@@ -1,0 +1,116 @@
+"""Build step 7a - the checker on B's side.
+
+Every arriving message is checked before anything is kept:
+
+  chunk        SHA-256                      -> ask for the chunk again
+  rebuilt file SHA-256 of the whole file    -> ask for missing chunks, then raw
+  raw original SHA-256                      -> retry once, then log a failure
+  thumbnail    SHA-256 (A's exact bytes)    -> retry, then send the original
+  manifest     SHA-256                      -> ask for it again
+"""
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass, field
+from typing import List, Optional
+
+from .device import Device
+from .keys import FILE, Key, THUMB, sha256_hex
+from .wire import Message, decompress
+
+
+@dataclass
+class Verdict:
+    ok: bool
+    reason: str = ""
+    bad_hashes: List[str] = field(default_factory=list)
+    missing_hashes: List[str] = field(default_factory=list)
+
+    def __bool__(self) -> bool:
+        return self.ok
+
+
+class Receiver:
+    """Device B's intake: check, then keep."""
+
+    def __init__(self, dev: Device):
+        self.dev = dev
+
+    # -- per form ---------------------------------------------------------
+    def apply(self, msg: Message) -> Verdict:
+        fn = getattr(self, f"_on_{msg.form}", None)
+        if fn is None:
+            return Verdict(False, f"unknown form {msg.form}")
+        return fn(msg)
+
+    def _on_manifest(self, msg: Message) -> Verdict:
+        want = sha256_hex(msg.body)
+        return Verdict(want == msg.kid.rsplit(":", 1)[1], "manifest hash mismatch")
+
+    def _on_raw_chunk(self, msg: Message) -> Verdict:
+        bad = []
+        for h, data, codec in msg.blobs:
+            try:
+                plain = decompress(data, codec)
+            except Exception:
+                bad.append(h)
+                continue
+            if sha256_hex(plain) != h:
+                bad.append(h)
+                continue
+            self.dev.store.put_chunk(plain)
+        if bad:
+            return Verdict(False, "chunk hash mismatch", bad_hashes=bad)
+        return Verdict(True)
+
+    def _on_thumb(self, msg: Message) -> Verdict:
+        key = Key.from_dict(json.loads(msg.body))
+        (h, data, codec) = msg.blobs[0]
+        plain = decompress(data, codec)
+        if sha256_hex(plain) != key.hash:
+            return Verdict(False, "thumb hash mismatch", bad_hashes=[key.hash])
+        self.dev.store.put_chunk(plain)
+        self.dev.store.add_key(key)
+        self.dev.thumb_path(msg.path).write_bytes(plain)
+        return Verdict(True)
+
+    def _on_key(self, msg: Message) -> Verdict:
+        key = Key.from_dict(json.loads(msg.body))
+        self.dev.store.add_key(key)
+        return self._materialise(msg.path, key)
+
+    _on_recipe = _on_key
+
+    # -- putting it back together ----------------------------------------
+    def _materialise(self, path: str, key: Key) -> Verdict:
+        if key.points_to == THUMB:
+            if not self.dev.store.has_chunk(key.hash):
+                return Verdict(False, "thumb blob missing", missing_hashes=[key.hash])
+            blob = self.dev.store.get_chunk(key.hash)
+            if sha256_hex(blob) != key.hash:
+                return Verdict(False, "thumb hash mismatch", bad_hashes=[key.hash])
+            self.dev.thumb_path(path).write_bytes(blob)
+            return Verdict(True)
+
+        known = self.dev.store.get_key(key.kid)
+        children = key.child_keys or (known.child_keys if known else ())
+        if not children:
+            return Verdict(False, "no recipe for this file", missing_hashes=[])
+        missing = [c.rsplit(":", 1)[1] for c in children
+                   if not self.dev.store.has_chunk(c.rsplit(":", 1)[1])]
+        if missing:
+            return Verdict(False, "missing chunks", missing_hashes=missing)
+        data = self.dev.store.rebuild(children)
+        if sha256_hex(data) != key.hash:
+            return Verdict(False, "rebuilt file hash mismatch")
+        self.dev.write_file(path, data)
+        return Verdict(True)
+
+    def accept_raw_file(self, path: str, key: Key, data: bytes) -> Verdict:
+        """The fallback: a whole original, checked end to end."""
+        if sha256_hex(data) != key.hash:
+            return Verdict(False, "raw original hash mismatch")
+        self.dev.write_file(path, data)
+        self.dev.store.put_chunk(data)
+        self.dev.store.add_key(key)
+        return Verdict(True)

@@ -24,9 +24,14 @@ from .wire import PACK_LIMIT, Message, compress
 class Want:
     """One thing B needs: an original, or a preview of one."""
     path: str
-    key: Key
+    key: Key              # what to satisfy: the file key, or the thumb key
     full_size: int        # the original's size, for the full-sync baseline
     photo: bool
+    file_key: Key = None  # the original's key - the raw fallback target
+
+    def __post_init__(self):
+        if self.file_key is None:
+            self.file_key = self.key
 
     @property
     def exact(self) -> bool:
