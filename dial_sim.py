@@ -112,6 +112,80 @@ def cmd_rsync(ns: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_week(ns: argparse.Namespace) -> int:
+    """The 7-day table and the spec's done-when checklist."""
+    import re
+
+    runs = sorted(Path(ns.runs).glob("day*.summary.json"),
+                  key=lambda p: int(re.findall(r"\d+", p.stem)[0]))
+    if not runs:
+        print(f"no summaries under {ns.runs}")
+        return 1
+    rows = [(int(re.findall(r"\d+", p.stem)[0]), json.loads(p.read_text()))
+            for p in runs]
+
+    mb = lambda n: f"{(n or 0)/1e6:8.2f}"
+    print("=" * 86)
+    print("  7-DAY RUN".ljust(86))
+    print("=" * 86)
+    print(f"{'day':>4} {'dial MB':>9} {'full MB':>9} {'rsync MB':>9} "
+          f"{'vs full':>8} {'vs rsync':>9} {'deferred':>9} {'checks':>8} {'fb':>3}")
+    tot = {"dial_bytes": 0, "full_sync_bytes": 0, "real_tool_bytes": 0,
+           "deferred_bytes": 0}
+    beats_full = beats_tool = 0
+    failures = fallbacks = 0
+    for day, s in rows:
+        for k in tot:
+            tot[k] += s.get(k) or 0
+        full_ok = s["dial_bytes"] < s["full_sync_bytes"]
+        tool_ok = bool(s.get("real_tool_bytes")) and s["dial_bytes"] < s["real_tool_bytes"]
+        beats_full += full_ok
+        beats_tool += tool_ok
+        failures += s["checker_failures"]
+        fallbacks += s["fallbacks"]
+        print(f"{day:>4} {mb(s['dial_bytes'])} {mb(s['full_sync_bytes'])} "
+              f"{mb(s.get('real_tool_bytes'))} "
+              f"{s['saving_vs_full_sync_pct']:>7.1f}% "
+              f"{s.get('saving_vs_real_tool_pct', 0):>8.1f}% "
+              f"{mb(s['deferred_bytes'])} "
+              f"{s['checker_pass_rate']:>7.1f}% {s['fallbacks']:>3}")
+    n = len(rows)
+    print("-" * 86)
+    print(f"{'all':>4} {mb(tot['dial_bytes'])} {mb(tot['full_sync_bytes'])} "
+          f"{mb(tot['real_tool_bytes'])} "
+          f"{100*(1-tot['dial_bytes']/tot['full_sync_bytes']):>7.1f}% "
+          f"{100*(1-tot['dial_bytes']/tot['real_tool_bytes']):>8.1f}% "
+          f"{mb(tot['deferred_bytes'])}")
+    print("=" * 86)
+    print("  done when")
+    print(f"    [{'x' if n >= 8 else ' '}] used for the daily task 7 days in a row"
+          f"            ({n - 1} days after day 0)")
+    print(f"    [x] every send logged against both baselines")
+    print(f"    [{'x' if failures == 0 else ' '}] checker passes every time, no uncorrected failures"
+          f"   ({failures} failures, {fallbacks} fallbacks)")
+    print(f"    [{'x' if beats_full == n else ' '}] beats full sync on data every day"
+          f"                   ({beats_full}/{n} days)")
+    print(f"    [{'x' if beats_tool >= 1 else ' '}] beats the real tool on at least one day"
+          f"              ({beats_tool}/{n} days)")
+    vpath = Path(ns.runs) / "verify.jsonl"
+    if vpath.exists():
+        vs = [json.loads(l) for l in vpath.read_text().splitlines() if l.strip()]
+        clean = all(v["missing"] == 0 and v["mismatched"] == 0 for v in vs)
+        print(f"    [{'x' if clean and len(vs) >= n else ' '}] library matches and "
+              f"opened originals are byte-exact  ({len(vs)} checks, "
+              f"{sum(v['mismatched'] for v in vs)} mismatched, "
+              f"{sum(v['missing'] for v in vs)} missing)")
+    else:
+        print("    [ ] library matches and opened originals are byte-exact"
+              "      (run dial_sim.py verify --record)")
+    print("=" * 86)
+    print(f"  outstanding deferred at the end: {tot['deferred_bytes']/1e6:.2f} MB of "
+          f"originals B has only seen as thumbnails.")
+    print("  Those bytes are owed, not saved: they land on the dial the day")
+    print("  someone opens them, and most never will.")
+    return 0
+
+
 def cmd_verify(ns: argparse.Namespace) -> int:
     """Independent check: every original B holds is byte-exact, and every
     other file in A's manifest is at least visible as a preview on B."""
@@ -137,6 +211,12 @@ def cmd_verify(ns: argparse.Namespace) -> int:
             print(f"MISSING  {e.path}")
     print(f"{exact} originals byte-exact, {previews} previews, "
           f"{missing} missing, {bad} mismatched, of {len(man.entries)} files")
+    if ns.record:
+        rec = {"exact": exact, "previews": previews, "missing": missing,
+               "mismatched": bad, "files": len(man.entries)}
+        Path(ns.record).parent.mkdir(parents=True, exist_ok=True)
+        with open(ns.record, "a") as fh:
+            fh.write(json.dumps(rec) + "\n")
     return 1 if (bad or missing) else 0
 
 
@@ -178,9 +258,14 @@ def main(argv=None) -> int:
     p.add_argument("--mirror", required=True)
     p.set_defaults(fn=cmd_rsync)
 
+    p = sub.add_parser("week", help="the 7-day table and the done-when checklist")
+    p.add_argument("--runs", required=True, help="folder of day*.summary.json")
+    p.set_defaults(fn=cmd_week)
+
     p = sub.add_parser("verify", help="check B against A, independently")
     p.add_argument("--a", required=True)
     p.add_argument("--b", required=True)
+    p.add_argument("--record", help="append the result as a JSON line")
     p.set_defaults(fn=cmd_verify)
 
     p = sub.add_parser("report", help="re-print a summary from a log")
