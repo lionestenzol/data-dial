@@ -5,6 +5,7 @@ other's files; everything crosses as a message whose bytes are counted.
 """
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence
 
@@ -33,6 +34,10 @@ class Device:
         self.thumbs = thumbs
         self.thumb_dir = self.state / "thumbs"
         self.thumb_dir.mkdir(parents=True, exist_ok=True)
+        # what this device already shows at each path, and under which key
+        self.bindings_path = self.state / "bindings.json"
+        self.bindings = (json.loads(self.bindings_path.read_text())
+                         if self.bindings_path.exists() else {})
 
     # -- A side -----------------------------------------------------------
     def scan(self) -> mf.Manifest:
@@ -45,6 +50,16 @@ class Device:
 
     def have_chunks(self, hashes: Iterable[str]) -> List[bool]:
         return [self.store.has_chunk(h) for h in hashes]
+
+    def settled(self, path: str, want_kid: str, file_kid: str) -> bool:
+        """Nothing to send: B already shows exactly what is offered at this
+        path, or shows the current original, which beats any preview of it."""
+        cur = self.bindings.get(path)
+        return cur is not None and cur in (want_kid, file_kid)
+
+    def bind(self, path: str, kid: str) -> None:
+        self.bindings[path] = kid
+        self.bindings_path.write_text(json.dumps(self.bindings))
 
     # -- B side: what it can show / open ----------------------------------
     def thumb_path(self, rel: str) -> Path:

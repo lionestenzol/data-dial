@@ -72,6 +72,7 @@ class Receiver:
         self.dev.store.put_chunk(plain)
         self.dev.store.add_key(key)
         self.dev.thumb_path(msg.path).write_bytes(plain)
+        self.dev.bind(msg.path, key.kid)
         return Verdict(True)
 
     def _on_key(self, msg: Message) -> Verdict:
@@ -90,6 +91,7 @@ class Receiver:
             if sha256_hex(blob) != key.hash:
                 return Verdict(False, "thumb hash mismatch", bad_hashes=[key.hash])
             self.dev.thumb_path(path).write_bytes(blob)
+            self.dev.bind(path, key.kid)
             return Verdict(True)
 
         known = self.dev.store.get_key(key.kid)
@@ -104,6 +106,7 @@ class Receiver:
         if sha256_hex(data) != key.hash:
             return Verdict(False, "rebuilt file hash mismatch")
         self.dev.write_file(path, data)
+        self.dev.bind(path, key.kid)
         return Verdict(True)
 
     def accept_raw_file(self, path: str, key: Key, data: bytes) -> Verdict:
@@ -113,4 +116,5 @@ class Receiver:
         self.dev.write_file(path, data)
         self.dev.store.put_chunk(data)
         self.dev.store.add_key(key)
+        self.dev.bind(path, key.kid)
         return Verdict(True)

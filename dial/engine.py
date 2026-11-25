@@ -77,16 +77,23 @@ class Engine:
             if not v.ok:
                 raise RuntimeError("manifest failed twice")
 
-    def have_check(self, kids: Sequence[str]) -> Set[str]:
-        """Step 4 of the build order: B reports the keys it has."""
-        if not kids:
-            return set()
+    def have_check(self, wants: Sequence["router.Want"]):
+        """Step 4 of the build order: B reports what it has.
+
+        Two bits per item: whether it holds the key at all, and whether that
+        path already shows it.  An item it already shows costs nothing more.
+        """
+        if not wants:
+            return set(), set()
         q = Message("A->B", "have_query", "", None,
-                    body=b"".join(bytes.fromhex(k.rsplit(":", 1)[1]) for k in kids))
+                    body=b"".join(bytes.fromhex(w.key.hash) for w in wants))
         self._charge_only(q)
-        bits = self.b.have_keys(kids)
-        self._charge_only(Message("B->A", "have", "", None, body=pack_bits(bits)))
-        return {k for k, ok in zip(kids, bits) if ok}
+        held = [self.b.store.has_key(w.key.kid) for w in wants]
+        bound = [self.b.settled(w.path, w.key.kid, w.file_key.kid) for w in wants]
+        self._charge_only(Message("B->A", "have", "", None,
+                                  body=pack_bits(held + bound)))
+        return ({w.path for w, ok in zip(wants, bound) if ok},
+                {w.key.kid for w, ok in zip(wants, held) if ok})
 
     def chunk_check(self, hashes: Sequence[str]) -> Set[str]:
         if not hashes:
@@ -100,7 +107,10 @@ class Engine:
 
     # -- the send loop, with retry and raw fallback -----------------------
     def run_plan(self, wants: Sequence[router.Want]) -> int:
-        have_keys = self.have_check([w.key.kid for w in wants])
+        settled, have_keys = self.have_check(wants)
+        wants = [w for w in wants if w.path not in settled]
+        if not wants:
+            return 0
         ask: List[str] = []
         seen: Set[str] = set()
         for w in wants:
