@@ -32,7 +32,7 @@ for d in 1 2 3 4 5 6 7; do
       --edits "${EDITS[$i]}" --seed "$((11 + d))" | tail -1
   $PY dial_sim.py sync --a "$BENCH/A" --b "$BENCH/B" --open "${OPENS[$i]}" \
       --seed "$d" --log "$RUNS/day$d.jsonl" \
-      --mirror "$BENCH/rsync_mirror" --rawdir "$BENCH/raw_mirror" | tail -24
+      --mirror "$BENCH/rsync_mirror" --rawdir "$BENCH/raw_mirror"
   $PY dial_sim.py verify --a "$BENCH/A" --b "$BENCH/B" --record "$RUNS/verify.jsonl"
 done
 

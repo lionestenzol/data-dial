@@ -75,11 +75,15 @@ def cmd_sync(ns: argparse.Namespace) -> int:
     jlog.write_jsonl(records, log_path)
 
     real = None
+    extra = {}
     if not ns.no_rsync:
         mirror = Path(ns.mirror or (Path(ns.b).parent / "rsync_mirror"))
         got = run_rsync(Path(ns.a), mirror)
         if got:
             real = got[got["baseline"]]["total"]
+            extra["rsync_delta_bytes"] = got["delta"]["total"]
+            extra["rsync_whole_bytes"] = got["whole"]["total"]
+            extra["rsync_files"] = got["delta"]["files"]
             print(f"rsync (delta)  sent {got['delta']['bytes_sent']:,} + received "
                   f"{got['delta']['bytes_received']:,} = {got['delta']['total']:,} bytes "
                   f"over {got['delta']['files']} files")
@@ -93,8 +97,12 @@ def cmd_sync(ns: argparse.Namespace) -> int:
         logged_full = sum(r["baseline_full_bytes"] for r in records)
         ok = "matches" if rs["bytes"] == logged_full else "DOES NOT MATCH"
         print(f"               logger full-sync column {logged_full:,} -> {ok}")
+        extra["raw_sync_bytes"] = rs["bytes"]
+        extra["raw_sync_files"] = rs["files"]
+        extra["raw_sync_matches"] = rs["bytes"] == logged_full
 
     s = jlog.summarise(records, res, real_tool_bytes=real)
+    s.update(extra)
     print(jlog.format_summary(s))
     print(f"log: {log_path}")
     (log_path.parent / (log_path.stem + ".summary.json")).write_text(json.dumps(s, indent=2))
@@ -160,7 +168,11 @@ def cmd_week(ns: argparse.Namespace) -> int:
     print("  done when")
     print(f"    [{'x' if n >= 8 else ' '}] used for the daily task 7 days in a row"
           f"            ({n - 1} days after day 0)")
-    print(f"    [x] every send logged against both baselines")
+    checked = [s for _, s in rows if "raw_sync_matches" in s]
+    agree = sum(1 for s in checked if s["raw_sync_matches"])
+    print(f"    [{'x' if checked and agree == len(checked) else ' '}] every send logged "
+          f"against both baselines                ({agree}/{len(checked)} days the "
+          f"full-sync column equals real Raw Sync bytes)")
     print(f"    [{'x' if failures == 0 else ' '}] checker passes every time, no uncorrected failures"
           f"   ({failures} failures, {fallbacks} fallbacks)")
     print(f"    [{'x' if beats_full == n else ' '}] beats full sync on data every day"
