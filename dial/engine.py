@@ -35,6 +35,7 @@ class RunResult:
     files: Dict[str, FileState]
     rows: list
     opened: List[str]
+    changed: Set[str] = field(default_factory=set)
     time_to_visible_ms: float = 0.0
     time_to_open_ms: float = 0.0
     fallbacks: int = 0
@@ -170,6 +171,8 @@ class Engine:
         self.exchange_manifest(man)
         entries = man.by_path()
         files = {e.path: FileState(e.size, e.kind) for e in man.entries}
+        # measurement, not protocol: which files a full sync would send whole
+        changed = {e.path for e in man.entries if not self.b.store.has_key(e.file_kid)}
 
         library: List[router.Want] = []
         for e in man.entries:
@@ -200,4 +203,5 @@ class Engine:
         for r in rows:
             if r.path in files:
                 files[r.path].final = r.shown_as
-        return RunResult(man, files, rows, opened, t_visible, t_open, falls)
+        return RunResult(man, files, rows, opened, changed,
+                         t_visible, t_open, falls)

@@ -7,6 +7,7 @@ all, exactly once.
 from __future__ import annotations
 
 import time
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
@@ -78,6 +79,7 @@ class Ledger:
 
     def charge(self, msg: Message, elapsed_ms: float) -> dict:
         rec = {
+            "ts": datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
             "direction": msg.direction,
             "path": msg.path,
             "form": msg.form,
