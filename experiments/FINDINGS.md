@@ -95,3 +95,64 @@ things neither experiment touches:
   accumulated structure helps with experiences from a distribution it has
   never seen. That is the difference between compressing a known distribution
   and accumulating reusable capability.
+
+## 003 — measured vs structural extraction cost
+**Why:** PRIOR_ART.md showed cost-driven selection already exists three times
+over, all three selecting against a structural proxy their own docs say need
+not predict runtime. 002 reproduced that defect independently. So the open
+question is whether a *measured* cost function beats a structural one, and
+whether measuring repays itself.
+
+**Domain:** convolution. `conv(a,b)` and `ifft(fft(a)·fft(b))` are exactly
+equal; direct wins small, FFT wins large, and the crossover is a property of
+the machine. An algorithmic choice, so no backend compiler rescues it.
+Selection runs through egglog's `DagCostModel`, with only the weight table
+differing between arms.
+
+| arm | matches oracle | worst regret |
+|---|---|---|
+| ast_size (fewest nodes) | 4/10 | **x94.44** |
+| static_weight (one scalar per operator) | 6/10 | x10.24 |
+| measured (per-machine, per-n) | **10/10** | x1.00 |
+
+Crossover n* = 256. Exact at every n.
+
+### Predictions vs actual — 6 of 6
+| | prediction | actual | verdict |
+|---|---|---|---|
+| R1 | crossover exists, 64 <= n* <= 4096 | n* = 256 | hit |
+| R2 | ast_size picks direct everywhere, margin grows | 10/10 direct, regret 1.00 -> 94.44 | hit |
+| R3 | one static table cannot be right across the range | wrong at the small end, 6/10 | hit |
+| R4 | measured matches oracle within 5% | 10/10, regret exactly 1.00 | hit |
+| R5 | calibration costs more than one resolution | 0.04 ms vs 0.0009 ms at n=16; 73 ms vs 0.25 ms at n=8192 | hit |
+| R6 | bit-exact at every n | true at every n | hit |
+
+### The result I did not predict
+R5 is right but the shape of it is more useful than the prediction. Break-even
+on calibration:
+
+| n | waste per request under the static table | calibration | break-even |
+|---|---|---|---|
+| 16 | 0.0087 ms | 0.04 ms | **4.7 requests** |
+| 32 | 0.0087 ms | 0.04 ms | 4.6 |
+| 64 | 0.0084 ms | 0.05 ms | 5.7 |
+| 128 | 0.0054 ms | 0.07 ms | 13.0 |
+| 256+ | 0 | 0.14–73 ms | **never** |
+
+Measuring repays inside ~5–13 requests exactly where the static table is
+wrong, and never repays where the static table is already right — and that is
+also where measurement is most expensive, because calibration scales with n
+while the saving goes to zero.
+
+So the mechanism is not "always measure". It is **measure where the static
+model is uncertain, and only there**. That is a design rule the literature's
+framing of this problem does not supply, and it came out of charging for the
+measurement instead of assuming it free.
+
+### Honest limits
+This domain was *chosen* because the proxy must fail in it. The 94x figure is
+an existence proof that structural cost can be catastrophically wrong — it
+says nothing about how often that happens in real workloads. Single machine,
+single numeric kernel family, NumPy's FFT rather than a tuned library, and
+the e-graph carries one rule. Nothing here establishes that measured costing
+helps on a workload nobody picked in advance.
