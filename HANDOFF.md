@@ -25,7 +25,10 @@ Two background documents, both written in this project:
 | `research/` | prior-art registry: 33 cards, capability matrix, gap list, verification ledger |
 | `research/findings/SELECTOR_GAP.md` | the key literature finding |
 | `research/findings/INDEPENDENT_RERUN.md` | the bundle's smoke test, re-run here |
-| `experiments/FINDINGS.md` | experiment log, 002 / 002b / 003 |
+| `experiments/FINDINGS.md` | experiment log, 002 / 002b / 003 / 004 |
+| `experiments/EXP004_PREREGISTRATION.md` | 004's ten predictions, committed before the run |
+| `bench/corpus/`, `bench/fetch_corpus.sh` | 004's corpus (gitignored; rebuild from pinned SHAs) |
+| `research/benchmarks/CORPUS_MANIFEST.json` | corpus provenance + SHA256 |
 | `.venv-research/` | Python env with egglog, redun, wasmtime, stitch-core (gitignored) |
 
 Run experiments with `.venv-research/bin/python -I experiments/<file>.py`.
@@ -45,6 +48,32 @@ The venv was relocated, so its scripts' shebangs are broken — use
   slower than optimal at n=8192. One static weight table is wrong at one end
   of the range by construction. Measured per-machine costs match the oracle
   10/10. All six pre-registered predictions hit.
+- **Experiment 004** — the frequency question, answered. 539 decisions over
+  802 in-scope FPCores from FPBench and Herbie, suites assembled by the
+  floating-point accuracy community years before this project. Structural
+  cost is **exactly optimal at the median** and materially wrong (≥1.5x) on
+  **4.3%** of decisions, worst case 48.30x. 7 of 10 predictions hit.
+
+**Measured, and negative — read this before building on 003:**
+- **004 inverted the programme's central assumption.** Plain AST-size node
+  counting beat *both* a textbook static latency table *and* per-operator
+  measured cost: smaller tail (p95 1.451 vs 1.517 and 1.512), more
+  exact-oracle matches, less waste per decision. The 13.5 ms calibration has
+  **no break-even at all** — measured's waste per decision exceeds
+  ast_size's, so measuring bought negative value.
+- The reason is a dissociation worth carrying forward: the weighted models
+  **predict runtime better** (Spearman 0.913 and 0.904 against ast_size's
+  0.836) and **select worse**. Selection ranks a handful of equivalent forms
+  inside one candidate set — local near-ties — and a globally better-calibrated
+  model can systematically mis-rank exactly those. **Global fit is the wrong
+  figure of merit for a selector.** 004 would have concluded the opposite had
+  it scored fit instead of regret.
+- Cost-model **granularity and counting discipline beat measurement**. Tree
+  counting improved every arm (ast_size p95 1.451 → 1.309) because `lambdify`
+  does no CSE and so really evaluates trees; one `pow_int` weight cannot
+  encode that NumPy does `a**2` faster than `a*a` but `a**3` slower than
+  `a*a*a`, and on the 153 decisions with an `x*x` candidate exact-oracle match
+  fell to 20.3% for both weighted arms against ~77% elsewhere.
 
 **Measured, and negative:**
 - **Experiment 002** — automatic discovery of reusable substructure works
@@ -74,19 +103,49 @@ static table is wrong and never repays where it is right — and that is
 exactly where measuring costs most, because calibration scales with the
 problem while the saving goes to zero.
 
-## Next experiment, and it is the honest one
+004 adds the condition that rule was missing: **and only if the thing you
+measure is the thing that drives cost.** Per-operator latency, measured in
+isolation on the real machine, is not that thing for array code — and
+measuring it carefully made selection worse than counting nodes. 003's win
+came from an *asymptotic* difference (O(n²) against O(n log n)) that no
+weight table can encode; it did not come from knowing operator latencies
+accurately. Those are different claims, and only the first survives 004.
 
-003's domain was *chosen* because the proxy had to fail in it. 94x is an
-existence proof, not a frequency claim. The next question cannot be stacked
-in our favour:
+The scope of the whole mechanism is now measured, not assumed: **a tail-risk
+fix.** 95% of real decisions have nothing to win, and the 48x case exists but
+is rare. Perfect selection is also unaffordable — timing every candidate costs
+162x simply running the best form — so cheapness of the cost model, not its
+accuracy, is the binding constraint.
 
-> **How often is structural cost wrong on a workload nobody picked in
-> advance?**
+## Next experiment
 
-Take a corpus of real expressions or programs that somebody else wrote, run
-all three cost arms, and report the distribution of regret — not the maximum.
-If structural cost is near-optimal 95% of the time, the measured-cost
-mechanism is a niche fix and the architecture should say so.
+004 answered the frequency question and it came back at 4.3%, so the
+architecture now has to say what HANDOFF predicted it might have to: the
+measured-cost mechanism is a niche fix. Two candidates follow, and the first
+is the one that would change the programme's direction.
+
+**A. Can the tail be *detected* cheaply?** The whole value of measured costing
+now rests on 4.3% of decisions where regret reaches 1.5x–48x. A mechanism that
+is wrong 4% of the time is worth having only if you can tell *which* 4%
+without paying the oracle's 162x. So: is there a cheap predicate over the
+candidate set — disagreement between two cheap cost models, presence of an
+exponent-dependent operator, a wide spread in predicted cost — that flags
+high-regret decisions with useful precision and recall? Pre-register the
+precision/recall thresholds that would make it worth shipping. If no cheap
+predicate separates the tail, measured costing cannot be targeted and should
+be dropped from the resolution policy rather than scoped.
+
+**B. Does the 004 inversion survive a backend where counting is not enough?**
+004's result is entangled with one backend: vectorised NumPy with no CSE,
+where cost is near-linear in operator count and so counting nodes is close to
+counting memory passes. Re-run the same corpus and the same three arms through
+a backend that fuses (Numba, JAX, or C via Cython) and where operator count
+stops tracking cost. If the weighted arms win there, 004's conclusion is a
+NumPy fact rather than an architectural one, and the honest claim shrinks to
+"the cost model must match the backend's cost structure."
+
+Do not re-run 004 with more corpora before doing A or B. The frequency number
+is not the uncertain part any more.
 
 ## Working practices that are load-bearing
 
@@ -111,6 +170,19 @@ document result "level with rsync" and reported a zero on photographs that
 was an artifact of its own byte-level chunker. Treat its confidence about
 individual pieces as reasonable and its judgement about whether combining
 them is worth more than the sum as poorly calibrated.
+
+004 continued the pattern and sharpened it. All three of its misses ran the
+same way: it assumed a measured or hand-weighted cost model must beat counting
+nodes (T5), that calibration would amortise (T9), and it wrote T10's predicate
+so that T5's assumption was buried inside it — a prediction that could not
+fail cleanly because it presupposed another one. It also over-estimated how
+often structural cost is wrong, by 2.3x. The directional bias is now
+**over-crediting the mechanism the programme is invested in**, including in
+how the test itself is specified. Two safeguards earned their place in 004 and
+should be kept: write each predicate so it depends on exactly one claim, and
+score predictions with a script that runs off the results file rather than by
+reading the numbers and narrating. 004's tautological hypothesis test, left
+labelled in the analysis script, is what the unaided version looks like.
 
 ## Environment facts
 

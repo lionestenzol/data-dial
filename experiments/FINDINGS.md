@@ -156,3 +156,152 @@ says nothing about how often that happens in real workloads. Single machine,
 single numeric kernel family, NumPy's FFT rather than a tuned library, and
 the e-graph carries one rule. Nothing here establishes that measured costing
 helps on a workload nobody picked in advance.
+
+## 004 — how often is structural cost wrong on a corpus nobody picked?
+**Why:** 003 proved structural cost *can* be 94x wrong, in a domain chosen so
+the proxy had to fail. HANDOFF.md set the frequency question as the honest
+next step, and designed it so the answer could be "rarely, so the mechanism is
+niche."
+
+**Corpus:** 913 FPCores, FPBench @090d8198 + Herbie bench @884621aa, pinned by
+SHA256. Mined from Hamming ch.3, LULESH, CoolProp, mathjs, Octave, Rust libm,
+PBRT, basilisk, exasim, and the Rosa/Daisy/Salsa/FPTaylor suites. Both suites
+were assembled by the floating-point **accuracy** community years before this
+project; neither was selected for how cost models behave on it. 802 in scope,
+111 excluded by category (array/tensor 38, while 21, if 18, user-defined calls
+17, oversized 7, other 10). 743 cores evaluated, **539 decisions** (a decision
+is a core with ≥2 accuracy-admitted equivalent candidates), 2,483 candidates.
+
+Candidates come from SymPy's own simplification API plus integer-power
+expansion. Accuracy admits (relative error ≤ 1e-6 against a 30-digit
+reference), cost selects — a candidate that is faster but wrong is never a
+candidate.
+
+### The distribution, not the maximum
+
+| arm | =oracle | ≤1.05 | p50 | p90 | p95 | p99 | max | ≥1.5 |
+|---|---|---|---|---|---|---|---|---|
+| ast_size | **65.3%** | **78.7%** | 1.000 | 1.221 | **1.451** | 3.572 | 48.30 | **4.3%** |
+| static_weight | 61.0% | 73.8% | 1.000 | 1.297 | 1.517 | 2.819 | 48.30 | 5.6% |
+| measured | 60.9% | 74.0% | 1.000 | 1.274 | 1.512 | 2.592 | 48.30 | 5.4% |
+
+Tree counting instead of DAG counting improves every arm: ast_size p95
+1.451 → **1.309**, static 1.517 → 1.444, measured 1.512 → 1.404.
+
+Timing noise floor over 743 re-timings of the *same* candidate: p50 1.0000x,
+p95 1.0375x, p99 1.1230x, max 1.3643x. **No re-timing reached 1.5x**, so the
+≥1.5 column is clean of noise. The p90 band near 1.2 sits above the 99th
+percentile of noise and is meaningful in aggregate, but a single decision
+there is weak evidence.
+
+### Answer to the question
+**Structural cost is exactly optimal at the median and materially wrong on
+4.3% of decisions.** The 003 phenomenon is real outside its chosen domain —
+worst case here is **48.30x** on `sineOrder3`, where the as-written form has
+fewer nodes and runs 0.983 ms against 0.020 ms for SymPy's simplification —
+but it is a tail event, not a typical one.
+
+So measured costing is a **tail-risk fix, not a throughput win**, and the
+architecture should say so. On this corpus, 95% of decisions have nothing to
+win.
+
+### The result that inverts the programme's assumption
+**Plain node counting beat both the textbook table and measured per-operator
+cost** — smaller tail, more exact-oracle matches, less waste per decision
+(0.01380 ms against 0.01862 and 0.01746). Measuring per-operator latency made
+selection *worse*. T5, T9 and T10 all missed on this.
+
+The mechanism is not that node count is a better cost model. It is the
+opposite, and the dissociation is the finding:
+
+| model | Spearman r with runtime | p95 regret |
+|---|---|---|
+| ast_size (tree) | 0.8357 | **1.309** |
+| static (tree) | **0.9131** | 1.444 |
+| measured (tree) | 0.9037 | 1.404 |
+
+**The weighted models predict runtime better and select worse.** Selection
+only has to rank the handful of equivalent forms inside one candidate set —
+a local, near-tie comparison — not to predict runtime globally. A model can be
+better calibrated overall and still systematically mis-rank exactly those
+near-ties. Global fit is the wrong figure of merit for a selector, and this
+experiment would have reported the opposite conclusion had it measured fit
+instead of regret.
+
+Two concrete mechanisms behind the weighted arms' losses, on 46 of 539
+decisions:
+- NumPy computes `a**2` in 3.2 µs but `a*a` in 7.2 µs, while `a**3` takes
+  41.9 µs against 14.6 µs for `a*a*a`. One `pow_int` weight is wrong at one
+  end of the exponent range **by construction** — 003's structural
+  impossibility, arising here with nobody choosing it. On the 153 decisions
+  holding an `x*x` candidate, exact-oracle match collapses: ast_size 35.3%
+  (from 77.2%), static and measured **20.3%** (from 77.2%).
+- `JAX exp2 as exp(log(2)*x)`: simplification rewrites it to `2**x`, which the
+  weighted models price as cheaper and which runs 5.08x slower.
+
+### Predictions vs actual — 7 of 10
+| | prediction | actual | verdict |
+|---|---|---|---|
+| T1 | ≥400 decisions | 539 | hit |
+| T2 | ast_size p50 ≤ 1.05 | 1.0000 | hit |
+| T3 | ast_size p95 ≥ 1.25, max ≥ 2.0 | 1.451, 48.30 | hit |
+| T4 | frac(regret ≥ 1.5) in 2–25%, est 10% | **4.3%** | hit, est 2.3x high |
+| T5 | static beats ast_size; measured adds <1.20x | static 1.517 **worse** than ast 1.451 | **miss, inverted** |
+| T6 | measured matches oracle <90% | 60.9% | hit |
+| T7 | tree counting beats DAG on ≥2 arms | all 3 improved | hit |
+| T8 | x*x decisions degrade every arm | 35.3/20.3/20.3% vs ~77% | hit |
+| T9 | calibration repaid within 50 decisions | **never repays** | **miss, inverted** |
+| T10 | ordering survives without power expansion | p50 1.0000 ✓, second clause assumed T5 | **miss, mis-specified** |
+
+T9's miss is stronger than "725 decisions". Measured's waste per decision
+(0.01746 ms) *exceeds* ast_size's (0.01380 ms), so the 13.5 ms calibration has
+no break-even at all here — it buys negative value. 003's rule was "measure
+where the static model is uncertain"; this adds **and only if the thing you
+measure is the thing that drives cost.** Per-operator latency measured in
+isolation is not that thing for this backend.
+
+T10 was mis-specified by me, not merely wrong: its second clause silently
+assumed T5. The artifact question it was meant to ask answers **no** — with
+power expansion removed, ast_size p50 is still 1.0000x and ast_size is still
+the best of the three arms (p95 1.251 against static 1.412, measured 1.435).
+Power expansion amplified the tail (≥1.5 from 2.6% to 4.3%) but did not
+create the ordering. The predicate stands as a miss; only its interpretation
+was corrected.
+
+Also recorded: the analysis script's test of the memory-pass hypothesis is
+**tautological** — ast_size weights are 1.0 per operator and 0.0 per leaf, so
+ast_size *is* the interior-node count. It is left in the script labelled as
+such rather than deleted. The hypothesis that cost is driven by intermediate
+arrays remains untested.
+
+### The oracle is not a policy
+Timing every admitted candidate costs **30.454 ms per decision** against
+0.1878 ms to simply run the best form — **162x**. Perfect selection by
+measurement is unaffordable per request, which is what makes the cheapness of
+the cost model the whole game.
+
+### Honest limits
+Single machine, single backend, and that backend decides a lot: vectorised
+NumPy over 16 K-element L2-resident arrays, where `lambdify` performs no CSE
+(228.8 µs against 118.5 µs with it) and cost is near-linear in operator count
+including temporaries. Scalar code, a fused compiler, or cache-resident sizes
+would re-rank the arms, and the DAG-vs-tree result is specifically an artifact
+of this backend's lack of CSE. Candidates come from one CAS, so the candidate
+sets are SymPy-shaped. Accuracy admission at 1e-6 against a 30-digit reference
+excludes rewrites that trade accuracy for speed, which is deliberate but
+narrows the candidate space. 111 of 913 cores are out of scope, including all
+control flow. Timings were taken in a shared cloud container; the noise floor
+is measured and reported rather than assumed away.
+
+### Harness defects found
+- First full run crashed at ~150 cores: 13 in-scope cores declare `:pre`
+  domains spanning many orders of magnitude (Hamming's large-x examples reach
+  1e308, one demo core declares the whole float range) and `rng.uniform`
+  overflows once `hi-lo` exceeds the float range. Uniform sampling was wrong
+  there regardless — every draw lands in the top decade. Now log-uniform for
+  sign-consistent wide domains, as Herbie's own sampler does.
+- The FPCore tokenizer initially treated `[` and `]` as ordinary symbol
+  characters, so every `(let ([x 1]) ...)` binding parsed as malformed. This
+  silently cost 165 cores (634 parsed, then 799) and would have passed
+  unnoticed as a plausible scope exclusion. Rejections must be itemised by
+  reason, or a parser bug reads as a corpus property.

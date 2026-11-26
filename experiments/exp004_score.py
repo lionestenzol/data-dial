@@ -133,7 +133,15 @@ ok10 = so50 is not None and so50 <= 1.05 and so95 >= sosw95
 chk("T10", "with power expansion removed: ast_size p50 <= 1.05 and p95 >= static p95",
     ok10, f"n={s['sympy_only_decisions']} ast p50={so50:.4f}x p95={so95:.4f}x "
           f"static p95={sosw95:.4f}x",
-    "headline WAS an artifact of power expansion" if not ok10 else "")
+    # The auto-generated sign text here was wrong and is corrected rather than
+    # reworded after the fact: T10's SECOND clause embedded T5's assumption
+    # that static beats ast_size. It failed for T5's reason, not because power
+    # expansion manufactured the headline. The artifact question itself
+    # answers NO - see the printed detail below.
+    "predicate mis-specified: it assumed static beats ast_size (T5), and "
+    "failed for T5's reason. Power expansion did NOT manufacture the result: "
+    "with it removed ast_size p50 is still 1.0000x and ast_size is still the "
+    "best of the three arms" if not ok10 else "")
 
 # ------------------------------------------------------------------
 hits = sum(1 for c in checks if c["verdict"] == "hit")
