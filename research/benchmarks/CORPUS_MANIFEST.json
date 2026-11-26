@@ -1,0 +1,463 @@
+{
+  "purpose": "Corpus for experiment 004. Pinned so the regret distribution is reproducible.",
+  "note": "Both suites were assembled by the floating-point ACCURACY community, years before this project, for accuracy research. Neither was selected for how cost models behave on it. That is the point.",
+  "sources": [
+    {
+      "name": "FPBench",
+      "repo": "https://github.com/FPBench/FPBench",
+      "commit": "090d81982edc0d2a597f4c15644253d4f266a6ef",
+      "commit_date": "2026-11-18T22:45:03-08:00",
+      "path_in_repo": "benchmarks/",
+      "local": "bench/corpus/fpbench/",
+      "provenance": "Hamming ch.3 textbook, Rosa/Daisy/Salsa/FPTaylor verification suites, apron, precimonious, graphics, PyTorch/SLEEF bug reports (ml-frameworks)."
+    },
+    {
+      "name": "Herbie bench",
+      "repo": "https://github.com/herbie-fp/herbie",
+      "commit": "884621aac3aa8a0b8f0801b67330d885ada158b0",
+      "commit_date": "2026-11-22T20:27:12-08:00",
+      "path_in_repo": "bench/",
+      "local": "bench/corpus/herbie/",
+      "provenance": "Mined from real software: LULESH (DOE hydro proxy app), CoolProp, mathjs, jmatjs, Octave, Rust libm, basilisk, exasim, eig, PBRT graphics, physics/mathematics/numerics suites, haskell."
+    }
+  ],
+  "files": {
+    "bench/corpus/fpbench/apron.fpcore": {
+      "sha256": "4889c62dca890243a76119ae3376fb045dc143a37d76516ddfcdfdbdf943dea3",
+      "bytes": 1665,
+      "fpcores": 6
+    },
+    "bench/corpus/fpbench/daisy.fpcore": {
+      "sha256": "964eeffb073b600d27468e2ae5d0dad5f51682ea24c63cb0fcd60a07eac4af40",
+      "bytes": 2248,
+      "fpcores": 7
+    },
+    "bench/corpus/fpbench/fptaylor-extra.fpcore": {
+      "sha256": "a3832b85f20e16e923b60e482bd3e4d70bd68aa03a09acb104d2531bbb4dda87",
+      "bytes": 3966,
+      "fpcores": 17
+    },
+    "bench/corpus/fpbench/fptaylor-real2float.fpcore": {
+      "sha256": "ec16d12889ad2818bcd4405dcd69deb9e2bcd1786fa09f88b23afce7db12f43d",
+      "bytes": 6181,
+      "fpcores": 11
+    },
+    "bench/corpus/fpbench/fptaylor-tests.fpcore": {
+      "sha256": "ab05567929205045f6bcae6a0d1c78879227309cba6928e0ef811111179434da",
+      "bytes": 2216,
+      "fpcores": 10
+    },
+    "bench/corpus/fpbench/graphics.fpcore": {
+      "sha256": "0d21bf1cfb587efbe350ea3428878eb25504738a56c9078885860cf6ebaf3aaf",
+      "bytes": 597,
+      "fpcores": 1
+    },
+    "bench/corpus/fpbench/hamming-ch3.fpcore": {
+      "sha256": "abbed2f52400ce8b18de49485a77a3846b3ad31c0a71bc9146f70e29807d43e0",
+      "bytes": 4453,
+      "fpcores": 28
+    },
+    "bench/corpus/fpbench/herbie.fpcore": {
+      "sha256": "9f79e011b04c35f466e5c26b30d25ac56ed5c36d6e5fb72297c710ba1301bb2b",
+      "bytes": 556,
+      "fpcores": 3
+    },
+    "bench/corpus/fpbench/ml-frameworks.fpcore": {
+      "sha256": "0d2bd21f4e53fd4daa35586268d487c3bd1f85959fdb77e997a5bafb49fea46d",
+      "bytes": 15695,
+      "fpcores": 17
+    },
+    "bench/corpus/fpbench/precimonious.fpcore": {
+      "sha256": "984f5e8f3268ec54a3a8ad609d83f6c9c57fb1f783370637c0d7afff4701b36c",
+      "bytes": 2109,
+      "fpcores": 2
+    },
+    "bench/corpus/fpbench/rosa.fpcore": {
+      "sha256": "17caef3eb6065513600918f56f294a5c2401cf5593026d30aefe1bf4e62db09f",
+      "bytes": 13242,
+      "fpcores": 37
+    },
+    "bench/corpus/fpbench/rump.fpcore": {
+      "sha256": "55efbe73367e8a1e80d065c0c3740e58e3404c9026dda2ea4b05b6910316b2ca",
+      "bytes": 1338,
+      "fpcores": 3
+    },
+    "bench/corpus/fpbench/salsa.fpcore": {
+      "sha256": "0bf118e96d5177c2b9315ed88be415d9524e85e29044e24e968d10d9b94cebc2",
+      "bytes": 11731,
+      "fpcores": 10
+    },
+    "bench/corpus/herbie/arrays.fpcore": {
+      "sha256": "f971f72c5f1ba4dd6bcbf150712a1a744aeab300f19c52e9ce4b57851ac4963f",
+      "bytes": 1883,
+      "fpcores": 10
+    },
+    "bench/corpus/herbie/demo.fpcore": {
+      "sha256": "aa815f3d4138625f2c996496f6f58134691a0bc24b553ece54835d043f8ee6d4",
+      "bytes": 9196,
+      "fpcores": 15
+    },
+    "bench/corpus/herbie/graphics__fidget__bear.fpcore": {
+      "sha256": "4bb947b3e46195d6c8732bec3a73a32addbe4800cfb01bbbac5e5c82d35bef3f",
+      "bytes": 85227,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/graphics__fidget__colonnade.fpcore": {
+      "sha256": "725769b763a0a6556c457bc321ea3a42fc841c711890f02a5f50810e4bd1f804",
+      "bytes": 11387,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/graphics__fidget__gyroid-sphere.fpcore": {
+      "sha256": "08f94ad6c7158f62b25f49ae476cc10a1dcd40b33dc38a2a37f9a04f509199e9",
+      "bytes": 392,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/graphics__fidget__hi.fpcore": {
+      "sha256": "ce0e918ff0d7552f322f5b7314727d5b48c3e485e8b8b3c49427b617d91b05e6",
+      "bytes": 550,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/graphics__fidget__prospero.fpcore": {
+      "sha256": "c3f7bf14ad022bc0fd19a30b3958be34eb45fe163a3034d67c8d53beef75bbcd",
+      "bytes": 231873,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/graphics__fidget__quarter.fpcore": {
+      "sha256": "96046b04ed3f51c87ccbe4af02fc0dc5c12ccb9769bdab5e542366ae257a6833",
+      "bytes": 144,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/graphics__lod.fpcore": {
+      "sha256": "d1fb1887c0fae40c634eb09a0e8ac30066d3eada138cb8536152cf13f837061b",
+      "bytes": 8798,
+      "fpcores": 7
+    },
+    "bench/corpus/herbie/graphics__log-transform.fpcore": {
+      "sha256": "d23f60b0de9499c4244d8236c069bc76a15dcc07eb07337517b70fbb62a5234c",
+      "bytes": 390,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/graphics__pbrt.fpcore": {
+      "sha256": "2d3cbb7b0a86b228db555f166702a9d57f83482a90d0957e1b08e6b4985d2161",
+      "bytes": 7878,
+      "fpcores": 25
+    },
+    "bench/corpus/herbie/hamming__machine-decide.fpcore": {
+      "sha256": "1064da199f3a150678d41e5bd23929c5dc9ba4535462043be664b0b66bb8e8e4",
+      "bytes": 305,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/hamming__overflow-underflow.fpcore": {
+      "sha256": "b6d1a785869652fa2f9b0f506009ca29c02ecf3914696659b81dde53d887cd69",
+      "bytes": 321,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/hamming__quadratic.fpcore": {
+      "sha256": "69c2cc97803fc6b1517463651ffdade56ef2f596320e8671930f9be19e6ac2ef",
+      "bytes": 6067,
+      "fpcores": 4
+    },
+    "bench/corpus/herbie/hamming__rearrangement.fpcore": {
+      "sha256": "237c5b1fbd6304e33b3e637dd00f1c394a28e32590d639528b86e87ef181454e",
+      "bytes": 4513,
+      "fpcores": 7
+    },
+    "bench/corpus/herbie/hamming__series.fpcore": {
+      "sha256": "87fc0d0d7611a5b03c9ecbfdfc71303aa8353facb3522cd55e340727f84105ff",
+      "bytes": 2816,
+      "fpcores": 9
+    },
+    "bench/corpus/herbie/hamming__trigonometry.fpcore": {
+      "sha256": "264757f9e49aeb541ecce0ace70ee58bd78cd7a50612d69999251a4aee65621c",
+      "bytes": 5192,
+      "fpcores": 6
+    },
+    "bench/corpus/herbie/haskell.fpcore": {
+      "sha256": "4719be406d97964a38b1528af437fd6da1ba48d90d79b5045d9940a5dea86114",
+      "bytes": 79911,
+      "fpcores": 260
+    },
+    "bench/corpus/herbie/libraries__basilisk.fpcore": {
+      "sha256": "06b96a4f96182c048c4e08e9bf0a73074fa52a181bbbcf5bcfeaaea6e6a2f494",
+      "bytes": 11815,
+      "fpcores": 28
+    },
+    "bench/corpus/herbie/libraries__coolprop.fpcore": {
+      "sha256": "0efa36dbe923cfe136efe640465e63b4a091215288fc8b290be47e4852a7144d",
+      "bytes": 18419,
+      "fpcores": 24
+    },
+    "bench/corpus/herbie/libraries__eig.fpcore": {
+      "sha256": "abf26efe2b2007964ee894dc13b2520cfcec8e4f0b615eabad4a4befdcf560a8",
+      "bytes": 31723,
+      "fpcores": 13
+    },
+    "bench/corpus/herbie/libraries__exasim.fpcore": {
+      "sha256": "5aa9f3994e41e54583a13faf50a3752ac1819a1aae3b66ece3b7b5f494281eac",
+      "bytes": 37362,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/libraries__fast-math.fpcore": {
+      "sha256": "fb8b7c8c423810a0fcb8b8c13c7d5c55e3aa90c3963bafaed9bc12411550d9e8",
+      "bytes": 1082,
+      "fpcores": 8
+    },
+    "bench/corpus/herbie/libraries__jmatjs.fpcore": {
+      "sha256": "d58ec6f29b1d121af156496328e83490e85b0a9316b8004584d85c03a41b5d4a",
+      "bytes": 4364,
+      "fpcores": 8
+    },
+    "bench/corpus/herbie/libraries__lulesh.fpcore": {
+      "sha256": "c4d3b0162b7d2fafd4b5c4d5bb563043405a2edde46af762f9da23178d2b6d85",
+      "bytes": 99959,
+      "fpcores": 23
+    },
+    "bench/corpus/herbie/libraries__mathjs__arithmetic.fpcore": {
+      "sha256": "1414fb87bc1c757478b49a60ccea224b075f9bf60ebd5e125ecd32542888c405",
+      "bytes": 4001,
+      "fpcores": 23
+    },
+    "bench/corpus/herbie/libraries__mathjs__complex.fpcore": {
+      "sha256": "a83a75b81fe13d38683c4b874fe9a525e93d7151993b90dc9835fc723efcdb7e",
+      "bytes": 85,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/libraries__mathjs__probability.fpcore": {
+      "sha256": "e768d0adad36ba6d7c8648c68dff923a5790e896000068559844339449726ccb",
+      "bytes": 179,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/libraries__mathjs__trigonometry.fpcore": {
+      "sha256": "d69f523f9545df00230dec16ac793c774e4e40a6fb783367028fda0f6c65dbb4",
+      "bytes": 967,
+      "fpcores": 5
+    },
+    "bench/corpus/herbie/libraries__octave__CollocWt.fpcore": {
+      "sha256": "320d511335110b3c660e4f11dcea4e39140f1bff80dc21bd2cfc580aeda9b2b7",
+      "bytes": 1783,
+      "fpcores": 5
+    },
+    "bench/corpus/herbie/libraries__octave__randgamma.fpcore": {
+      "sha256": "7d9416f34880b648636f137e3eb6346bc1e79a59fea3c2ca34f9d2dc57b8f2ec",
+      "bytes": 250,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/libraries__rust.fpcore": {
+      "sha256": "8eb7b16bdf0a4d2078b6b829091ee1a20b852f4722015b1eaaae43b14a7f6183",
+      "bytes": 1139,
+      "fpcores": 6
+    },
+    "bench/corpus/herbie/mathematics__arvind.fpcore": {
+      "sha256": "ee4cd350a000cfd43da3a225627bd31bc15ea667d77264a03bcfde7cf83e8814",
+      "bytes": 716,
+      "fpcores": 3
+    },
+    "bench/corpus/herbie/mathematics__beta-distribution.fpcore": {
+      "sha256": "4a23e41feb63b0cfb3495e5f7432314c549612b4a97618daafc09cfb03f45ecc",
+      "bytes": 315,
+      "fpcores": 2
+    },
+    "bench/corpus/herbie/mathematics__dirichlet-mixture-model.fpcore": {
+      "sha256": "d464d53eea075c291ee1dbf00a2fa4a4e1204c2925c9501708a4ca669f4a60af",
+      "bytes": 1452,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/mathematics__excel.fpcore": {
+      "sha256": "f0969ed0be1e8467536955e3d3b96960ca36b0b226b939e8edb94ca4feb534cc",
+      "bytes": 225,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/mathematics__gui.fpcore": {
+      "sha256": "aeda5a24eafc1177c63b44c5ced19242d71333190ab225d78af97e9ef4f18aea",
+      "bytes": 6684,
+      "fpcores": 13
+    },
+    "bench/corpus/herbie/mathematics__hyperbolic-functions.fpcore": {
+      "sha256": "89265ce32c849604d2c8be28e2f4eff5015b1ffa69310d14b39e372f99bdcdad",
+      "bytes": 728,
+      "fpcores": 7
+    },
+    "bench/corpus/herbie/mathematics__latlong.fpcore": {
+      "sha256": "460ee76df10835737cfd58e060c3c5334c285a9421cd822276136f106607e404",
+      "bytes": 1976,
+      "fpcores": 6
+    },
+    "bench/corpus/herbie/mathematics__logistic-regression.fpcore": {
+      "sha256": "d58f7fc929ff2e52e5899cae0f4b3c06e106b0561f40ef4edb602a8b9e3f3051",
+      "bytes": 331,
+      "fpcores": 2
+    },
+    "bench/corpus/herbie/mathematics__sarnoff.fpcore": {
+      "sha256": "a0c3d544582fbf1e047a2b6605c309057c31a284f8a3ea247f5cb3e1db7fe568",
+      "bytes": 3876,
+      "fpcores": 14
+    },
+    "bench/corpus/herbie/mathematics__statistics.fpcore": {
+      "sha256": "a4e64b7b76fcf872eb4ed917b835a42db81864d4f5333b9abef8668ef496445c",
+      "bytes": 415,
+      "fpcores": 3
+    },
+    "bench/corpus/herbie/mathematics__symmetry.fpcore": {
+      "sha256": "7ecfe51b4d3debe52fb7dac753125c3d85c2d77ef76b05c8060b66ab9cf0eba7",
+      "bytes": 440,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/mathematics__xkcd-expr.fpcore": {
+      "sha256": "bab9f8224c675199cf9a4900bc1891d388faad39158064443c3764662eac9559",
+      "bytes": 103,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/numerics__conte.fpcore": {
+      "sha256": "b45e75998f4f3307dd2ca23b18b17ab3ab062af9212c0bc28a941743680d8d10",
+      "bytes": 1241,
+      "fpcores": 7
+    },
+    "bench/corpus/herbie/numerics__every-cs.fpcore": {
+      "sha256": "341356996b4eab04f5a8e9c6a720a75e521f23c479801994bc6e09701df45c36",
+      "bytes": 6134,
+      "fpcores": 10
+    },
+    "bench/corpus/herbie/numerics__fma.fpcore": {
+      "sha256": "ace210237241670903c60f528feb6d00578f9e6a0148349ebbb74a56c7762bd7",
+      "bytes": 444,
+      "fpcores": 2
+    },
+    "bench/corpus/herbie/numerics__great-debate.fpcore": {
+      "sha256": "b0812bddeef36d7b68e803dd38d8b4875557f0c513e2abe9aa0904c1b15a4c72",
+      "bytes": 1573,
+      "fpcores": 6
+    },
+    "bench/corpus/herbie/numerics__hamming-misc.fpcore": {
+      "sha256": "ab53b483c1e5b0e98f7e0c99e07427a49b525b477e54c9137d8ce2d87458faf2",
+      "bytes": 404,
+      "fpcores": 3
+    },
+    "bench/corpus/herbie/numerics__kahan.fpcore": {
+      "sha256": "9017e1a1c5b3aa4753658c9089688a1a3e39740de700c2ed9e1b99508028a093",
+      "bytes": 211,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/numerics__libm.fpcore": {
+      "sha256": "0ae28a2cdb31f82a25c52c67e8d72b0f498f23aab56476a1af52aa8b8e228cf2",
+      "bytes": 224,
+      "fpcores": 2
+    },
+    "bench/corpus/herbie/numerics__martel.fpcore": {
+      "sha256": "ae7f397cf9f164f5711266641604bac0a8eb1f1a760339e0ab49b79e5d66e8ec",
+      "bytes": 1377,
+      "fpcores": 7
+    },
+    "bench/corpus/herbie/numerics__polynomial-cancellation.fpcore": {
+      "sha256": "df36a204afd12c76c5faf622903aa74aa8b1cb069532644863b79996c26f7ba4",
+      "bytes": 286,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/numerics__rosa.fpcore": {
+      "sha256": "27fc418ab4320923855e99651928a2a4b782ed186f0bc7515d6fa8b9fb4557bc",
+      "bytes": 1062,
+      "fpcores": 4
+    },
+    "bench/corpus/herbie/numerics__rump.fpcore": {
+      "sha256": "e71251954e1d117f5d0dcfbc6302d41eeda71f652ac31e39a613c1f45cb90e0b",
+      "bytes": 823,
+      "fpcores": 3
+    },
+    "bench/corpus/herbie/physics__ballistics.fpcore": {
+      "sha256": "4cc3852351e2f654a0e4c312e62d052ac8e376543f65b3c32542f6f89360f1c6",
+      "bytes": 117,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/physics__dimer-escape.fpcore": {
+      "sha256": "1d08088b3ea62e15765c3a6c78c2ff09d00e760776082fe9919cb3d9904287d3",
+      "bytes": 463,
+      "fpcores": 3
+    },
+    "bench/corpus/herbie/physics__gated-magnetic-field.fpcore": {
+      "sha256": "de9fda8fc438f832986371e9170f03c5c02f03cc4ec31cd424c1a062ec5b8b75",
+      "bytes": 254,
+      "fpcores": 1
+    },
+    "bench/corpus/herbie/physics__gravitation.fpcore": {
+      "sha256": "e9b8a97683b170df8d6343dd821672430a775a72d7a19d81b8831a65b360590d",
+      "bytes": 2264,
+      "fpcores": 2
+    },
+    "bench/corpus/herbie/physics__kalman.fpcore": {
+      "sha256": "9f793bb1aae0fe39659fa2399b997d0c1ba86d9c65057de743c656937a9053bc",
+      "bytes": 13857,
+      "fpcores": 13
+    },
+    "bench/corpus/herbie/physics__multiphoton-states.fpcore": {
+      "sha256": "48eb436ec512d48a8be4f9db24804953dae679f2f8dbb6c5e9c3b3136bb6d56e",
+      "bytes": 266,
+      "fpcores": 2
+    },
+    "bench/corpus/herbie/physics__quantum-walk.fpcore": {
+      "sha256": "a63ebdfa42b8fd804cfb7dfe086878e9b83fc40044b7ba020af754a5e13f3d6b",
+      "bytes": 648,
+      "fpcores": 5
+    },
+    "bench/corpus/herbie/physics__sidey.fpcore": {
+      "sha256": "c4a3f69ee4118b8ed3e783664ab06d7ecff989d3cbd635d5c6d43cf962a96ba9",
+      "bytes": 497,
+      "fpcores": 2
+    },
+    "bench/corpus/herbie/physics__superfluidity-breakdown.fpcore": {
+      "sha256": "106f730f744f45eb493854be01a9daaf6a84e02d01087e070fe789bd692eab84",
+      "bytes": 1119,
+      "fpcores": 7
+    },
+    "bench/corpus/herbie/physics__tea-flows.fpcore": {
+      "sha256": "3e18d05c832b0c95ff78eb15f2264d92bc56ba13f92a81f819ca4846eefb1f67",
+      "bytes": 982,
+      "fpcores": 4
+    },
+    "bench/corpus/herbie/physics__tea-whistle.fpcore": {
+      "sha256": "33d561d26180979aac73c8b187743833a62b7816a318b7b1246fb07db339b913",
+      "bytes": 1518,
+      "fpcores": 4
+    },
+    "bench/corpus/herbie/physics__universal-linear-optics.fpcore": {
+      "sha256": "d8557b7b388aa355ee5b14df60f763bb53bd131d6340138e4fc8c020cd2a08ca",
+      "bytes": 1281,
+      "fpcores": 3
+    },
+    "bench/corpus/herbie/proj__krovak.fpcore": {
+      "sha256": "0b3f5ab84c3c1f196d6b118307c379772efea0338a6280947f82cb54f43cfe5b",
+      "bytes": 5666,
+      "fpcores": 13
+    },
+    "bench/corpus/herbie/proj__omerc.fpcore": {
+      "sha256": "de4e2e65b29201c84d4e6bcf8f78d21688d347c29f20caa9adcf1f3ddd19c937",
+      "bytes": 6928,
+      "fpcores": 25
+    },
+    "bench/corpus/herbie/proj__som.fpcore": {
+      "sha256": "c327557ce24c6c76cc3abd9449039769c152f9933ce793e759198e6326c57773",
+      "bytes": 6783,
+      "fpcores": 18
+    },
+    "bench/corpus/herbie/proj__somerc.fpcore": {
+      "sha256": "d45a6fd7db3d124504f7ea443072f319319252e48a3528e524b38607095098a4",
+      "bytes": 4939,
+      "fpcores": 16
+    },
+    "bench/corpus/herbie/proj__tmerc.fpcore": {
+      "sha256": "668950cabc45de53aeffb527743a9eb2f5b4a8e02267ea30add4ec57fe1fc32b",
+      "bytes": 3607,
+      "fpcores": 20
+    },
+    "bench/corpus/herbie/regression.fpcore": {
+      "sha256": "79c1cfc8f57973be24bdf7fe957e048357691f463b4622c679f193489db6ad3d",
+      "bytes": 3313,
+      "fpcores": 21
+    },
+    "bench/corpus/herbie/tutorial.fpcore": {
+      "sha256": "9eb55137aa39158f2cd93206c4711fff10398d2f61b80361d379b9ee0d8d520e",
+      "bytes": 230,
+      "fpcores": 3
+    }
+  },
+  "total_files": 87,
+  "total_fpcores": 914
+}
