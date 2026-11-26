@@ -3,7 +3,15 @@
 Batch: 12 MP JPEGs from `photogen.py` plus real documentation files taken off
 this machine (`/usr/share/vim/vim91/doc`, `/usr/share/doc`). Day 0 is the
 starting library — 30 photos, 24 documents. Days 1–7 are the spec's daily
-task: 10–20 photos added, 1–3 documents edited, 3–5 new photos opened on B.
+task: 10–20 photos added, 1–3 documents edited, 3–5 photos opened on B.
+
+One deviation from the spec's wording, worth knowing before reading the
+table: the spec says "open 3-5 *new* photos", and the driver opened 3-5
+photos B had no original of — new ones, or ones deferred on an earlier day.
+22 of the 34 opens were of earlier days' photos. That is arguably the more
+realistic pattern, and it exercises the deferred mechanic harder, but it is
+not what the spec asked for. `dial_sim.py sync --open-new` restricts opens to
+the day's own additions.
 By day 7 SyncSet holds 154 files, 631 MB.
 
 Reproduce: `./run_week.sh bench`. Logs in `bench/runs/day{0..7}.jsonl`,
@@ -65,16 +73,28 @@ approximate by rsync's own protocol overhead, a kilobyte or so a day.)
 
 ## What the deferred column means
 
-251.70 MB of originals exist on A that B has only ever seen as thumbnails.
-Those bytes are owed, not saved. They land on the dial the day someone opens
-them — which is what days 1–7 keep doing, and why a day's dial bytes are
-mostly originals being fetched rather than new content arriving.
+At the end of the week, 96 of 130 photos — **206.48 MB** — exist on A and
+have never been anything but a thumbnail on B. Those bytes are owed, not
+saved. They land on the dial the day someone opens them, which is what days
+1–7 keep doing: most of a day's dial bytes are old originals being fetched,
+not new content arriving.
 
-If B opened every deferred original, the week would cost 330.27 MB against
-full sync's 284.83 MB: the dial would finish **16% behind**, because a photo
-fetched after its thumbnail pays for the thumbnail twice. Only day 0 wins
-even in that worst case (66.16 MB against rsync's 67.45 MB). The dial's edge
-is real, repeatable, and conditional on most photos staying unopened.
+**Correction.** An earlier version of this file added up the per-day deferred
+column (251.70 MB) and called that the outstanding liability. It is not: that
+column charges a photo on the day its thumbnail goes out and never retracts
+it once the original is fetched and paid for in dial bytes, so it
+double-counted 45.22 MB. The worst case it produced — "16% behind full sync
+if B opened everything" — was wrong.
+
+The real worst case is **+0.1%**. Open every one of the 96 remaining
+originals and the week costs 285.05 MB against full sync's 284.83 MB.
+
+That is not luck, it is the shape of the thing: a photo that gets opened
+costs its original plus a thumbnail that turned out to be wasted, and a
+thumbnail is about 1% of an original. So the dial's downside against full
+sync is bounded at roughly the thumbnail overhead no matter how B behaves,
+while its upside is however much of the library nobody opens — 72% on this
+week's data. The risk is asymmetric in the dial's favour.
 
 ## Limits of this run
 

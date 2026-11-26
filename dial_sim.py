@@ -55,17 +55,23 @@ def cmd_sync(ns: argparse.Namespace) -> int:
 
     open_paths = list(ns.open_path or [])
     if ns.open:
-        # open photos from this day's changes first, as the daily task says
+        # Photos B has no original of - the ones it could open.  With
+        # --open-new, only those that are new or changed since A's last run,
+        # which is what the spec's daily task says; otherwise any of them,
+        # including originals deferred on an earlier day.
         man = A.scan()
+        snap = A.state / "sent_manifest.json"
+        before = json.loads(snap.read_text()) if snap.exists() else {}
         fresh, older = [], []
         for e in man.entries:
             if e.kind != PHOTO or (B.root / e.path).exists():
                 continue
-            (fresh if not B.store.has_key(e.file_kid) else older).append(e.path)
+            (fresh if before.get(e.path) != e.file_kid else older).append(e.path)
         rnd = random.Random(ns.seed)
         rnd.shuffle(fresh)
         rnd.shuffle(older)
-        open_paths += (fresh + older)[:ns.open]
+        pool = fresh if ns.open_new else fresh + older
+        open_paths += pool[:ns.open]
 
     led = Ledger()
     res = Engine(A, B, led).sync(open_paths=open_paths)
@@ -191,10 +197,20 @@ def cmd_week(ns: argparse.Namespace) -> int:
         print("    [ ] library matches and opened originals are byte-exact"
               "      (run dial_sim.py verify --record)")
     print("=" * 86)
-    print(f"  outstanding deferred at the end: {tot['deferred_bytes']/1e6:.2f} MB of "
-          f"originals B has only seen as thumbnails.")
-    print("  Those bytes are owed, not saved: they land on the dial the day")
-    print("  someone opens them, and most never will.")
+    last = rows[-1][1]
+    out = last.get("outstanding_deferred_bytes")
+    if out is None:
+        print("  (re-run to record the outstanding deferred figure)")
+        return 0
+    print(f"  outstanding at the end: {out/1e6:.2f} MB of originals B has only")
+    print(f"  seen as thumbnails. Owed, not saved - they land on the dial the")
+    print(f"  day someone opens them. The deferred column above sums to")
+    print(f"  {tot['deferred_bytes']/1e6:.2f} MB, which is larger because it counts a photo")
+    print(f"  on the day its thumbnail went and does not retract it once the")
+    print(f"  original is fetched.")
+    worst = tot["dial_bytes"] + out
+    print(f"  If every one of them were opened: {worst/1e6:.2f} MB against full sync's "
+          f"{tot['full_sync_bytes']/1e6:.2f} MB ({100*worst/tot['full_sync_bytes']-100:+.1f}%).")
     return 0
 
 
@@ -251,6 +267,8 @@ def main(argv=None) -> int:
     p.add_argument("--a", required=True, help="Device A folder (SyncSet)")
     p.add_argument("--b", required=True, help="Device B folder")
     p.add_argument("--open", type=int, default=0, help="open N photos on B")
+    p.add_argument("--open-new", action="store_true",
+                   help="open only photos new or changed since A's last run")
     p.add_argument("--open-path", action="append", help="open this path on B")
     p.add_argument("--log", help="where to write the JSONL log")
     p.add_argument("--mirror", help="folder for the rsync mirrors")

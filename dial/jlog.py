@@ -101,6 +101,12 @@ def summarise(records: List[dict], result=None,
         s["originals_on_b"] = sum(1 for f in result.files.values() if f.final == "original")
         s["previews_on_b"] = sum(1 for f in result.files.values() if f.final == "preview")
         s["missing_on_b"] = sum(1 for f in result.files.values() if f.final == "missing")
+        # The liability as it stands now, over the whole library: originals B
+        # still has not got.  Not the same as summing the per-day deferred
+        # column, which counts a photo again every time it is first seen and
+        # does not retract it once the original is finally fetched.
+        s["outstanding_deferred_bytes"] = sum(
+            f.full_size for f in result.files.values() if f.final != "original")
     return s
 
 
