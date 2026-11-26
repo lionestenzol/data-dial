@@ -330,11 +330,36 @@ def candidates_for(expr, stats):
 
 
 # ----------------------------------------------------------- sampling, truth
+WIDE_DECADES = 1e3      # span above which a domain is sampled log-uniformly
+CLAMP_MAG = 1e12        # magnitude cap for mixed-sign unbounded domains
+
+
 def sample_points(core, rng, n):
+    """Sample the declared :pre domain.
+
+    13 of the 802 in-scope cores declare domains spanning many orders of
+    magnitude - Hamming's large-x examples go to 1e308, and one demo core
+    declares the whole float range. Uniform sampling there is both
+    meaningless (every draw lands at the top decade) and impossible
+    (rng.uniform overflows when hi-lo exceeds the float range; this crashed
+    the first full run). Sign-consistent wide domains are therefore sampled
+    LOG-uniformly, which is what Herbie's own sampler does and what the
+    benchmarks intend; mixed-sign unbounded domains are clamped in magnitude
+    and the clamp is reported as a limitation.
+    """
     cols = {}
     for name in core.args:
         lo, hi, nonzero = core.domain[name]
-        v = rng.uniform(lo, hi, size=n)
+        if lo > 0 and hi / lo > WIDE_DECADES:
+            v = np.exp(rng.uniform(math.log(lo), math.log(hi), size=n))
+        elif hi < 0 and lo / hi > WIDE_DECADES:
+            v = -np.exp(rng.uniform(math.log(-hi), math.log(-lo), size=n))
+        else:
+            a = max(min(lo, CLAMP_MAG), -CLAMP_MAG)
+            b = max(min(hi, CLAMP_MAG), -CLAMP_MAG)
+            if b < a:
+                a, b = b, a
+            v = rng.uniform(a, b, size=n)
         if nonzero:
             bad = np.abs(v) < 1e-3
             v[bad] = np.where(v[bad] >= 0, 1e-3, -1e-3)
