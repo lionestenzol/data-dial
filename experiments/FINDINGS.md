@@ -422,3 +422,107 @@ oracle (fewer repeats, smaller arrays) would scale every break-even down
 roughly linearly. 004 recorded only best-of-11 times, so a noisy oracle's pick
 quality is not recoverable from this data. That is the single most promising
 way to rescue the mechanism and it requires a new measurement run.
+
+## 006 — what is the cheapest sufficient oracle? (reverses 005)
+**Why:** 005 recommended dropping measured costing, but every break-even in it
+assumed one oracle price — best-of-11 timing of every candidate, 30.454 ms per
+decision. That price is a design choice. 004 kept only best-of-11 *minima*, so
+a noisy oracle's pick quality was unrecoverable; this run records **48
+individual timings per candidate**, split alternately into disjoint simulation
+and truth pools so neither is biased by drift, plus 12 samples at each of three
+smaller probe sizes. 536 decisions.
+
+### Repeat reduction: cost falls linearly, quality barely moves
+
+| R | oracle ms | waste recovered | % of R=24 | mis-pick rate | break-even, no targeting |
+|---|---|---|---|---|---|
+| **1** | 1,614 | 13.014 ms | **91.6%** | **22.9%** | **124.1** |
+| 2 | 3,205 | 13.542 | 95.3% | 14.4% | 236.6 |
+| 4 | 6,355 | 13.805 | 97.1% | 11.0% | 460.4 |
+| 12 | 19,106 | 14.152 | 99.6% | 5.6% | 1350.0 |
+| 24 | 38,209 | 14.211 | 100% | 4.5% | 2688.7 |
+
+The hinge held. **A single-repeat oracle mis-picks on 22.9% of decisions and
+still recovers 91.6% of the waste**, because oracle noise flips near-ties and
+near-ties are by definition the decisions with almost nothing to lose. Mis-pick
+*rate* is the wrong metric; recovered waste is the right one — which is why V3
+was pre-registered to predict a high mis-pick rate alongside V2.
+
+### Size reduction: the result I predicted wrong, and the one that matters
+
+| config | oracle ms | waste recovered | break-even |
+|---|---|---|---|
+| **probe=256, R=1** | **55** | 86.9% | **4.7** |
+| probe=1024, R=1 | 125 | 87.5% | 10.2 |
+| probe=256, R=3 | 160 | 89.5% | 13.2 |
+| probe=4096, R=1 | 419 | 82.0% | 36.2 |
+
+I predicted (V5) that ranking on 256-element arrays would transfer poorly
+because per-call overhead dominates there. It transfers at **91.9%** of full-size
+R=12 quality for ~1/31 of the cost. V6 named repeat reduction as the rescue;
+small probes beat it by ~27x.
+
+### The decision, with uncertainty attached
+
+| | break-even | bootstrap 95% | verdict |
+|---|---|---|---|
+| 005's baseline: R=11, full size, no targeting | 1280.7 | [532, 3903] | FAIL |
+| R=1 full, no targeting | 132.3 | [51.5, 497] | marginal |
+| R=1 full, **perfect** targeting | 11.7 | [7.1, 19.9] | pass |
+| **probe=256, R=1, no targeting** | **4.7** | **[1.9, 24.0]** | **PASS** |
+
+**005's recommendation is reversed.** And the shape of the reversal is the
+finding: *a cheap oracle applied to every decision (4.7 requests) beats perfect
+targeting of an expensive one (11.7 requests)*. 005 spent itself trying to
+target a price that should have been lowered instead. The detector problem
+005 could not solve turns out not to need solving.
+
+Break-even of ~5 requests also lands exactly where 003 put calibration ("repays
+within ~5 requests where the static table is wrong"), from a completely
+different direction.
+
+### Predictions vs actual — 5 of 7
+| | prediction | actual | verdict |
+|---|---|---|---|
+| V1 | oracle cost linear in R within 10% | within 1.6% at every R | hit |
+| V2 | **hinge:** R=1 recovers ≥90% of R=24 | 91.6% | hit, but see below |
+| V3 | mis-pick rate at R=1 ≥ 20% | 22.9% | hit |
+| V4 | R=1 break-even ≤20 perfect, ≤100 cheap rule | 11.6 and 82.0 | hit |
+| V5 | small probes transfer poorly (≤70%) | 91.9% | **miss, optimistic** |
+| V6 | cheapest passing config is R≤3 at full size | probe=256, R=1 | **miss, wrong mechanism** |
+| V7 | R=1 no-targeting ≤150 requests | 124.1 | hit, not robust |
+
+### What is NOT established
+**The waste is pathologically concentrated: one decision holds 38.8% of it, the
+top three hold 66.6%, the top ten hold 85.9%.** Every "fraction of waste
+recovered" number therefore has a wide interval — V2's 91.6% is [70.7%, 96.6%]
+under a bootstrap over decisions, and the probe-size ranking above is **not
+resolvable at all** (probe=256 R=1 at [56.4%, 94.3%] overlaps probe=4096 R=1 at
+[30.2%, 95.5%]). So:
+
+- **Robust:** a cheap oracle clears the 200-request bar by a wide margin. The
+  worst case of the best config's interval is 24 requests, still 8x under the
+  bar. That conclusion does not depend on the fragile fractions.
+- **Not robust:** that 256 is the *best* probe size, that R=1 recovers
+  specifically 91.6%, and V7's point estimate of 124.1 for full-size R=1
+  (interval [51.5, 497] straddles the bar).
+- The concentration itself is a finding about this corpus and a warning for the
+  next experiment: with waste this concentrated, 536 decisions is a small
+  sample however many expressions it came from.
+
+### Honest limits
+Inherits 004's and 005's: single machine, vectorised NumPy with no CSE,
+SymPy-shaped candidate sets, accuracy admission at 1e-6. The probe transfer
+result is specific to a backend whose cost is near-linear in operator count —
+on a fusing backend small probes may rank quite differently, which is now the
+most important untested question (HANDOFF item B). Oracle cost is charged as
+evaluation time only, excluding compilation, which is right for a deployed
+candidate already compiled but wrong if candidates must be compiled to be
+timed; for a JIT backend that term could dominate and would have to be charged.
+The reversal is bounded to the same single-machine regime as everything else
+in this programme.
+
+### For reuse
+`exp006_candidate_exprs.json.gz` holds every admitted candidate's `srepr`, so
+item B can re-time the identical candidate sets on another backend without
+regenerating them through SymPy.

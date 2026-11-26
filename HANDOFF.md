@@ -28,6 +28,8 @@ Two background documents, both written in this project:
 | `experiments/FINDINGS.md` | experiment log, 002 / 002b / 003 / 004 / 005 |
 | `experiments/EXP004_PREREGISTRATION.md` | 004's ten predictions, committed before the run |
 | `experiments/EXP005_PREREGISTRATION.md` | 005's seven predictions, and its ship criterion |
+| `experiments/EXP006_PREREGISTRATION.md` | 006's seven predictions, with its hinge declared |
+| `experiments/exp006_candidate_exprs.json.gz` | every admitted candidate's srepr, for re-timing on another backend |
 | `bench/corpus/`, `bench/fetch_corpus.sh` | 004's corpus (gitignored; rebuild from pinned SHAs) |
 | `research/benchmarks/CORPUS_MANIFEST.json` | corpus provenance + SHA256 |
 | `.venv-research/` | Python env with egglog, redun, wasmtime, stitch-core (gitignored) |
@@ -54,12 +56,19 @@ The venv was relocated, so its scripts' shebangs are broken — use
   floating-point accuracy community years before this project. Structural
   cost is **exactly optimal at the median** and materially wrong (≥1.5x) on
   **4.3%** of decisions, worst case 48.30x. 7 of 10 predictions hit.
-- **Experiment 005** — the targeting question, answered, and it closes the
-  line. The 4.3% tail cannot be flagged economically. Best cheap rule needs
-  **854.8 requests per expression** to repay, against **1216.9** for not
-  targeting at all and a pre-registered bar of 200. A combined logistic over
-  nine zero-timing predicates reaches out-of-fold AUC 0.749 and still fails.
-  5 of 7 predictions hit.
+- **Experiment 005** — the targeting question. The 4.3% tail cannot be flagged
+  economically: best cheap rule needs **854.8 requests per expression** against
+  **1216.9** for not targeting at all and a bar of 200. A logistic over nine
+  zero-timing predicates reaches out-of-fold AUC 0.749 and still fails. The
+  cause is measured: `corr(oracle cost, waste) = 0.146`, so cheap predicates
+  track expression size, which drives what measuring costs but not how much
+  error there is. 5 of 7 predictions hit. **Superseded by 006 — its
+  recommendation to drop measured costing no longer stands.**
+- **Experiment 006 — reverses 005.** 005 assumed one oracle price. Lower it and
+  the problem dissolves: ranking candidates on **256-element probe arrays with
+  a single repeat** costs 55 ms across 536 decisions and breaks even in
+  **4.7 requests per expression**, bootstrap [1.9, 24.0], against the same
+  200-request bar. 5 of 7 predictions hit.
 
 **Measured, and negative — read this before building on 003:**
 - **004 inverted the programme's central assumption.** Plain AST-size node
@@ -124,18 +133,30 @@ is rare. Perfect selection is also unaffordable — timing every candidate costs
 162x simply running the best form — so cheapness of the cost model, not its
 accuracy, is the binding constraint.
 
-And 005 closed the remaining exit. The tail is real but **not addressable**,
-because no cheap predicate separates it. The reason is measured, not guessed:
-**expression size drives what measuring costs but not how much error there is**
-(`corr(oracle cost, waste) = 0.146`), and every cheap structural predicate
-correlates with size. Flagged decisions cost 7–11x more to measure than
-unflagged ones while holding no more error, so targeting spends the budget in
-proportion to its price rather than its return.
+005 then looked for the exit and 006 found it somewhere else entirely.
 
-The blocker is detector quality, not oracle price: a perfect detector would
-repay in 117.5 requests and pass the bar. So the standing recommendation is
-**drop measured costing from the resolution policy**, and the one condition
-that reopens it is a tail predicate not confounded with expression size.
+005 established that the tail cannot be *targeted*: no cheap predicate
+separates it, because expression size drives what measuring costs but not how
+much error there is (`corr(oracle cost, waste) = 0.146`), so flagging spends
+budget in proportion to price rather than return. That finding stands.
+
+006 showed the question was wrong. 005 was trying to target a price that
+should simply have been lowered. **A single-repeat oracle ranking candidates
+on 256-element arrays recovers ~90% of the available waste for ~1/550th of the
+cost, breaking even in 4.7 requests per expression.** A cheap oracle on *every*
+decision (4.7) beats perfect targeting of the expensive one (11.7). The
+detector problem 005 could not solve does not need solving.
+
+So the standing recommendation is now: **keep measured costing, run a cheap
+oracle everywhere, and do not build a detector.** The operating point is
+probe arrays two orders of magnitude smaller than the deployed size, one
+timing repeat, and no targeting.
+
+The mechanism behind it is worth stating because it generalises: **a noisy
+oracle mis-picks among near-ties, and near-ties are by definition the choices
+with nothing to lose.** At R=1 the oracle picks a non-best candidate on 22.9%
+of decisions and still captures 91.6% of the waste. Mis-pick rate is the wrong
+metric. Recovered waste is the right one.
 
 ## Next experiment
 
@@ -143,20 +164,45 @@ that reopens it is a tail predicate not confounded with expression size.
 remains are two specific, bounded questions, and **C is the one that could
 still rescue the mechanism.**
 
-**C. Does a cheaper oracle change the arithmetic?** Every break-even in 005
-assumes the oracle is best-of-11 timing of every candidate — 30.454 ms per
-decision. That price is a design choice, not a fact. One timing pass per
-candidate instead of eleven would cut it ~11x, taking the best cheap rule from
-854.8 requests to roughly 78 and perfect detection to ~11. The catch is that a
-cheap oracle is a noisy oracle and may pick the wrong candidate, and **004
-recorded only best-of-11 minima, so a noisy oracle's pick quality cannot be
-recovered from the existing data.** This needs a new run that records every
-repeat time per candidate, after which the trade-off between oracle price and
-oracle accuracy is a direct calculation. Pre-register the break-even that
-would make it worth shipping before running it. This is the cheapest
-experiment left and the only one that can reverse the recommendation.
+**B is now the only thing standing between this and a defensible claim**, and
+it threatens 004 and 006 together.
 
-**B. Does the 004 inversion survive a backend where counting is not enough?**
+**B. Does any of this survive a backend where operator count stops tracking
+cost?** Everything measured so far lives in one regime: vectorised NumPy with
+no CSE, where runtime is near-linear in operator count including temporaries.
+Two of the programme's load-bearing results may be artifacts of exactly that.
+004's inversion — node counting beating measured per-operator cost — is
+suspicious precisely because counting nodes nearly counts memory passes there.
+And 006's probe-transfer result needs the small-array ranking to predict the
+large-array ranking, which is plausible when cost is linear in operator count
+and much less so when a compiler fuses the whole expression into one pass.
+
+Re-time the identical candidate sets (their `srepr`s are saved, so no
+regeneration) through Numba, JAX, or C via Cython, and re-run 004's three arms
+and 006's probe grid. Pre-register separately for the two claims, because they
+can fail independently. Charge compilation this time: 006 charged evaluation
+time only, which is right for an already-compiled candidate and wrong for a
+JIT where compiling each candidate in order to time it could dominate the
+oracle's entire cost — and that single term could undo 006 on its own.
+
+If the arms re-rank there, 004's conclusion shrinks to "the cost model must
+match the backend's cost structure," and 006's operating point becomes
+NumPy-specific rather than architectural.
+
+**Superseded, do not redo:** the frequency question (004), the targeting
+question (005 — and 006 makes targeting unnecessary, so do not look for better
+tail predicates), and the oracle-price question in this backend (006).
+
+**Also worth knowing before the next run:** the waste is pathologically
+concentrated — one decision holds 38.8% of it, the top ten hold 85.9%. Every
+recovered-waste fraction in 006 therefore has a wide bootstrap interval, and
+the ranking among probe sizes is not resolvable at this sample size. Only the
+headline survives it, because its margin is 8x even at the interval's worst
+end. A backend comparison will need either many more decisions or a
+waste-weighted design that stops treating 536 decisions as 536 independent
+observations.
+
+**(Old item B, now folded into the above.) Does the 004 inversion survive a backend where counting is not enough?**
 004's result is entangled with one backend: vectorised NumPy with no CSE,
 where cost is near-linear in operator count and so counting nodes is close to
 counting memory passes. Re-run the same corpus and the same three arms through
@@ -213,6 +259,25 @@ mechanism behind the failure was *tested* (the size confound) rather than
 asserted, which is the specific error 004 made. Keep pre-registering a
 decision criterion with a number in it. It is what let 005 end a line of work
 instead of extending it.
+
+**006 broke the pattern, and in the opposite direction.** Both its misses
+(V5, V6) *under*-credited the mechanism: it predicted small probe arrays would
+transfer poorly and they transferred at 91.9%, and it named repeat reduction
+as the rescue when small probes beat that by 27x. After three experiments of
+over-optimism, the correction had over-shot into pessimism about a cheapening
+it had not tested. The durable lesson is narrower than "Claude is optimistic":
+**its errors cluster wherever it has not actually measured the thing, in
+whichever direction its last correction pointed.** The fix is not a standing
+prior about direction. It is noticing which quantity in the design has never
+been measured and measuring that one first — in 006 that was the oracle's own
+price, which three experiments had carried as a constant without ever asking
+what set it.
+
+One more habit earned its place in 006: **report the bootstrap, not just the
+point estimate.** Its headline survives resampling (4.7 requests, worst end
+24, against a bar of 200) while three of its subsidiary claims do not. Without
+that check the write-up would have asserted a probe-size ranking the data
+cannot support.
 
 ## Environment facts
 

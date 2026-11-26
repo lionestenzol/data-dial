@@ -10,3 +10,4 @@ research-incoming/
 # exp004 corpus is vendored under bench/corpus (pinned by SHA in the manifest),
 # but the fetch script that rebuilds it is tracked.
 !bench/fetch_corpus.sh
+experiments/exp006_timings.json

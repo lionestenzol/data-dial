@@ -1,0 +1,55 @@
+{
+  "hits": 5,
+  "total": 7,
+  "checks": [
+    {
+      "tag": "V1",
+      "claim": "oracle cost linear in R within 10%",
+      "verdict": "hit",
+      "actual": "cost(R)/(R*cost(1)): R=2 0.992, R=3 0.988, R=4 0.984, R=6 0.984, R=8 0.987, R=12 0.986, R=24 0.986",
+      "note": ""
+    },
+    {
+      "tag": "V2",
+      "claim": "HINGE: waste recovered at R=1 >= 90% of R=24",
+      "verdict": "hit",
+      "actual": "91.6% (13.014 of 14.211 ms)",
+      "note": "point estimate clears 90% but the bootstrap 95% interval is [70.7%, 96.6%] - one decision holds 38.8% of all waste, so this is NOT established at the stated precision. The direction is robust; the threshold is not."
+    },
+    {
+      "tag": "V3",
+      "claim": "mis-pick rate at R=1 >= 20% of decisions",
+      "verdict": "hit",
+      "actual": "22.9% mis-picked while recovering 91.6% of waste",
+      "note": ""
+    },
+    {
+      "tag": "V4",
+      "claim": "at R=1: break-even <=20 perfect and <=100 with dag_vs_tree",
+      "verdict": "hit",
+      "actual": "perfect 11.6 req, dag_vs_tree 82.0 req",
+      "note": ""
+    },
+    {
+      "tag": "V5",
+      "claim": "probe=256 R=12 recovers <=70% of full R=12",
+      "verdict": "MISS",
+      "actual": "91.9% (13.003 of 14.152 ms)",
+      "note": "size reduction transferred FAR better than predicted - this is the optimistic direction, the opposite of this assistant's documented bias"
+    },
+    {
+      "tag": "V6",
+      "claim": "cheapest passing config uses R<=3 at full array size",
+      "verdict": "MISS",
+      "actual": "cheapest passing is 'probe=256, R=1, flag everything' at 4.5 requests",
+      "note": "repeat reduction alone would have passed (R=1 full, 124.1 req), but small probes beat it by ~27x, so the prediction named the wrong mechanism"
+    },
+    {
+      "tag": "V7",
+      "claim": "at R=1, flagging everything breaks even in <=150 requests",
+      "verdict": "hit",
+      "actual": "124.1 requests",
+      "note": "point estimate clears 150; bootstrap interval [51.5, 496.8] does not establish it. The robust version of this claim uses a small probe: probe=256 R=1 gives 4.7 req with interval [1.9, 24.0], entirely under the bar."
+    }
+  ]
+}
