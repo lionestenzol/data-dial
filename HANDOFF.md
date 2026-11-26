@@ -25,8 +25,9 @@ Two background documents, both written in this project:
 | `research/` | prior-art registry: 33 cards, capability matrix, gap list, verification ledger |
 | `research/findings/SELECTOR_GAP.md` | the key literature finding |
 | `research/findings/INDEPENDENT_RERUN.md` | the bundle's smoke test, re-run here |
-| `experiments/FINDINGS.md` | experiment log, 002 / 002b / 003 / 004 |
+| `experiments/FINDINGS.md` | experiment log, 002 / 002b / 003 / 004 / 005 |
 | `experiments/EXP004_PREREGISTRATION.md` | 004's ten predictions, committed before the run |
+| `experiments/EXP005_PREREGISTRATION.md` | 005's seven predictions, and its ship criterion |
 | `bench/corpus/`, `bench/fetch_corpus.sh` | 004's corpus (gitignored; rebuild from pinned SHAs) |
 | `research/benchmarks/CORPUS_MANIFEST.json` | corpus provenance + SHA256 |
 | `.venv-research/` | Python env with egglog, redun, wasmtime, stitch-core (gitignored) |
@@ -53,6 +54,12 @@ The venv was relocated, so its scripts' shebangs are broken — use
   floating-point accuracy community years before this project. Structural
   cost is **exactly optimal at the median** and materially wrong (≥1.5x) on
   **4.3%** of decisions, worst case 48.30x. 7 of 10 predictions hit.
+- **Experiment 005** — the targeting question, answered, and it closes the
+  line. The 4.3% tail cannot be flagged economically. Best cheap rule needs
+  **854.8 requests per expression** to repay, against **1216.9** for not
+  targeting at all and a pre-registered bar of 200. A combined logistic over
+  nine zero-timing predicates reaches out-of-fold AUC 0.749 and still fails.
+  5 of 7 predictions hit.
 
 **Measured, and negative — read this before building on 003:**
 - **004 inverted the programme's central assumption.** Plain AST-size node
@@ -117,23 +124,37 @@ is rare. Perfect selection is also unaffordable — timing every candidate costs
 162x simply running the best form — so cheapness of the cost model, not its
 accuracy, is the binding constraint.
 
+And 005 closed the remaining exit. The tail is real but **not addressable**,
+because no cheap predicate separates it. The reason is measured, not guessed:
+**expression size drives what measuring costs but not how much error there is**
+(`corr(oracle cost, waste) = 0.146`), and every cheap structural predicate
+correlates with size. Flagged decisions cost 7–11x more to measure than
+unflagged ones while holding no more error, so targeting spends the budget in
+proportion to its price rather than its return.
+
+The blocker is detector quality, not oracle price: a perfect detector would
+repay in 117.5 requests and pass the bar. So the standing recommendation is
+**drop measured costing from the resolution policy**, and the one condition
+that reopens it is a tail predicate not confounded with expression size.
+
 ## Next experiment
 
-004 answered the frequency question and it came back at 4.3%, so the
-architecture now has to say what HANDOFF predicted it might have to: the
-measured-cost mechanism is a niche fix. Two candidates follow, and the first
-is the one that would change the programme's direction.
+004 and 005 together closed the measured-cost line as originally framed. What
+remains are two specific, bounded questions, and **C is the one that could
+still rescue the mechanism.**
 
-**A. Can the tail be *detected* cheaply?** The whole value of measured costing
-now rests on 4.3% of decisions where regret reaches 1.5x–48x. A mechanism that
-is wrong 4% of the time is worth having only if you can tell *which* 4%
-without paying the oracle's 162x. So: is there a cheap predicate over the
-candidate set — disagreement between two cheap cost models, presence of an
-exponent-dependent operator, a wide spread in predicted cost — that flags
-high-regret decisions with useful precision and recall? Pre-register the
-precision/recall thresholds that would make it worth shipping. If no cheap
-predicate separates the tail, measured costing cannot be targeted and should
-be dropped from the resolution policy rather than scoped.
+**C. Does a cheaper oracle change the arithmetic?** Every break-even in 005
+assumes the oracle is best-of-11 timing of every candidate — 30.454 ms per
+decision. That price is a design choice, not a fact. One timing pass per
+candidate instead of eleven would cut it ~11x, taking the best cheap rule from
+854.8 requests to roughly 78 and perfect detection to ~11. The catch is that a
+cheap oracle is a noisy oracle and may pick the wrong candidate, and **004
+recorded only best-of-11 minima, so a noisy oracle's pick quality cannot be
+recovered from the existing data.** This needs a new run that records every
+repeat time per candidate, after which the trade-off between oracle price and
+oracle accuracy is a direct calculation. Pre-register the break-even that
+would make it worth shipping before running it. This is the cheapest
+experiment left and the only one that can reverse the recommendation.
 
 **B. Does the 004 inversion survive a backend where counting is not enough?**
 004's result is entangled with one backend: vectorised NumPy with no CSE,
@@ -144,8 +165,9 @@ stops tracking cost. If the weighted arms win there, 004's conclusion is a
 NumPy fact rather than an architectural one, and the honest claim shrinks to
 "the cost model must match the backend's cost structure."
 
-Do not re-run 004 with more corpora before doing A or B. The frequency number
-is not the uncertain part any more.
+Do not re-run 004 with more corpora, and do not look for more tail predicates
+in the same family — 005 measured why that family fails. The frequency number
+and the targeting question are both settled.
 
 ## Working practices that are load-bearing
 
@@ -171,7 +193,7 @@ was an artifact of its own byte-level chunker. Treat its confidence about
 individual pieces as reasonable and its judgement about whether combining
 them is worth more than the sum as poorly calibrated.
 
-004 continued the pattern and sharpened it. All three of its misses ran the
+004 and 005 continued the pattern and sharpened it. All three of its misses ran the
 same way: it assumed a measured or hand-weighted cost model must beat counting
 nodes (T5), that calibration would amortise (T9), and it wrote T10's predicate
 so that T5's assumption was buried inside it — a prediction that could not
@@ -183,6 +205,14 @@ should be kept: write each predicate so it depends on exactly one claim, and
 score predictions with a script that runs off the results file rather than by
 reading the numbers and narrating. 004's tautological hypothesis test, left
 labelled in the analysis script, is what the unaided version looks like.
+
+005 ran the same way on its two misses — both over-credited the cheap signals
+— but its structural safeguards held: the ship criterion was economic and
+fixed in advance, so FAIL was unarguable once the number came in, and the
+mechanism behind the failure was *tested* (the size confound) rather than
+asserted, which is the specific error 004 made. Keep pre-registering a
+decision criterion with a number in it. It is what let 005 end a line of work
+instead of extending it.
 
 ## Environment facts
 

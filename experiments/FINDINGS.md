@@ -305,3 +305,120 @@ is measured and reported rather than assumed away.
   silently cost 165 cores (634 parsed, then 799) and would have passed
   unnoticed as a plausible scope exclusion. Rejections must be itemised by
   reason, or a parser bug reads as a corpus property.
+
+## 005 — can the regret tail be flagged without paying the oracle?
+**Why:** 004 left measured costing resting on 4.3% of decisions while the
+oracle costs 162x simply running the best form. A mechanism that is wrong 4%
+of the time is worth having only if you can tell *which* 4% cheaply. If not,
+measured costing cannot be targeted and should be dropped from the resolution
+policy rather than scoped.
+
+No new measurement: this re-uses 004's 539 decisions, so its risk is
+overfitting, which is what the grouped cross-validation addresses. Policy under
+test is 004's best cheap arm (`ast_size`, tree counting). Primary target is
+regret ≥ 1.2 — 52 positives holding 87.8% of all waste, above the measured
+noise p99 of 1.123; the 20 positives at ≥ 1.5 cannot support a stable precision
+estimate and are secondary. Grouped 5-fold CV with whole source files assigned
+to folds; thresholds fit on training folds only.
+
+### The criterion was economic, not statistical
+Flagging a decision recovers **all** of its waste whatever its regret, so
+precision matters only through the quantity that decides deployment:
+
+> break-even requests per expression = Σ(oracle cost over flagged) / Σ(waste recovered)
+
+Ship criterion, fixed in advance: ≤ 200 requests per expression while flagging
+≤ 20% of decisions.
+
+### Result — FAIL, and not because the oracle is too expensive
+
+| rule | flagged | waste kept | break-even (requests) | ship |
+|---|---|---|---|---|
+| perfect detector ≥1.5 | 3.7% | 83.1% | **107.9** | would pass |
+| perfect detector ≥1.2 | 9.6% | 87.8% | **117.5** | would pass |
+| `dag_vs_tree` | 11.3% | 74.3% | 854.8 | fail |
+| `disagree_ast_meas` | 13.5% | 62.3% | 1158.3 | fail |
+| `disagree_any` | 14.5% | 62.5% | 1159.9 | fail |
+| **flag everything** | 100% | 100% | **1216.9** | fail |
+| `sq_powexp` | 28.4% | 56.3% | 1485.9 | fail |
+| `disagree_ast_static` | 10.8% | 10.0% | 5505.4 | fail |
+| `pow_gen` | 8.2% | 9.0% | 6742.6 | fail |
+
+The best cheap rule reaches 854.8 requests against a 200 bar — and against
+1216.9 for flagging everything. **Cheap targeting buys a 1.4x improvement on
+doing no targeting at all**, where perfect targeting would buy 10.4x.
+
+A combined logistic over all nine predicates, scored out-of-fold, reaches
+AUC 0.749 — better than every single predicate (best 0.652) and nowhere near
+enough. At a 20% flagging budget it achieves precision 0.215, recall 0.442,
+and a break-even of 426.3.
+
+So the failure is **not** that the oracle is unaffordable: a perfect detector
+passes at 117.5 requests. The failure is in detection, and the gap is 7.3x.
+
+### Why cheap predicates fail here — tested, not asserted
+Every predicate flags decisions whose mean oracle cost is far above average,
+while correlating weakly with the waste it would recover:
+
+| rule | corr with oracle cost | corr with waste | mean oracle cost, flagged | unflagged |
+|---|---|---|---|---|
+| `disagree_ast_meas` | 0.174 | 0.130 | 133.4 ms | 14.3 ms |
+| `dag_vs_tree` | 0.168 | 0.182 | 140.4 ms | 16.4 ms |
+| `disagree_ast_static` | 0.146 | **-0.002** | 128.6 ms | 18.6 ms |
+| `pow_gen` | 0.199 | **0.003** | 186.8 ms | 16.6 ms |
+
+Across all 539 decisions, `corr(oracle cost, waste) = 0.146`. So:
+
+**Expression size drives the oracle's cost but not the waste. The cheap
+structural predicates correlate with size. Targeting on them therefore spends
+measurement budget in proportion to what measuring costs rather than in
+proportion to what it recovers.** Flagged decisions cost 7–11x more to measure
+than unflagged ones while holding no more error. That is the mechanism, and it
+is a property of the predicates available, not of the oracle's price.
+
+### Predictions vs actual — 5 of 7
+| | prediction | actual | verdict |
+|---|---|---|---|
+| U1 | best single precision ≤0.35 at recall ≥0.5 | `sq_powexp` 0.211 at recall 0.584 | hit |
+| U2 | disagreement beats `sq_powexp` | AUC 0.646 vs 0.652 at ≥1.2 | **miss, by 0.006** |
+| U3 | combined beats singles on AUC, precision at recall .5 still <0.5 | 0.749 vs 0.652; 0.232 | hit |
+| U4 | held-out precision ≥15% below train for tuned predicates | `_spread` +1.7%, `_ncand` −60.8% | **miss** |
+| U5 | perfect detector still needs >100 requests | 117.5 | hit |
+| U6 | best realistic detector 1.5–10x worse than perfect | 7.3x | hit |
+| U7 | at ≤20% budget, recall ≤0.75 and residual waste ≥25% | 0.442, 50.6% | hit |
+
+U2's miss is 0.006 of AUC, inside noise, and reverses decisively at the ≥1.5
+secondary target (0.837 against 0.519) — so model disagreement does carry the
+signal for *large* regret, just not for the 1.2–1.5 band that holds most of the
+positives. U4's miss is methodologically welcome: the threshold search was
+constrained by the 20% flagging budget, which kept it conservative enough that
+held-out matched train. At ≥1.5 both tuned predicates did drop ~50%, so the
+overfitting effect exists, just not at the primary target.
+
+### What this does to the architecture
+**Measured costing should be dropped from the resolution policy**, with the
+door left open on one specific condition. Stated precisely:
+
+1. Structural cost is optimal at the median and materially wrong on 4.3% of
+   real decisions (004).
+2. The resulting waste cannot be recovered economically, because no cheap
+   predicate separates the tail: 854.8 requests per expression against 1216.9
+   for not targeting at all.
+3. The blocker is detector quality, not oracle price. A perfect detector would
+   pass at 117.5 requests. Anyone who finds a tail predicate that is **not
+   confounded with expression size** reopens this; the confound is the thing to
+   defeat, and it is now measured.
+
+### Honest limits
+Inherits all of 004's limits — single machine, vectorised NumPy with no CSE,
+SymPy-shaped candidate sets. Adds three of its own. The positive class is
+small (52 at ≥1.2, 20 at ≥1.5), so precision estimates are noisy and the ≥1.5
+column should not be read as stable. The predicate family is the nine cheap
+signals listed; a richer feature set or a learned model over expression
+structure is untested and is exactly where the size confound would have to be
+broken. Most importantly, **the oracle's own price is treated as fixed at
+best-of-11 timing of every candidate**, and it need not be: a cheaper, noisier
+oracle (fewer repeats, smaller arrays) would scale every break-even down
+roughly linearly. 004 recorded only best-of-11 times, so a noisy oracle's pick
+quality is not recoverable from this data. That is the single most promising
+way to rescue the mechanism and it requires a new measurement run.
