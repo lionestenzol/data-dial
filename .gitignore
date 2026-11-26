@@ -3,3 +3,6 @@ __pycache__/
 runs/
 bench/
 .pytest_cache/
+research/experiments/.venv/
+research/experiments/*.db
+research-incoming/

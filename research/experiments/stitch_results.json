@@ -1,0 +1,13 @@
+{
+  "version": "0.1.29",
+  "input": [
+    "(foo (a a a))",
+    "(bar (b b b))"
+  ],
+  "abstractions": "[fn_0(#0) := (#0 #0 #0)]",
+  "rewritten": [
+    "(foo (fn_0 a))",
+    "(bar (fn_0 b))"
+  ],
+  "scope": "Upstream toy example; no held-out utility or runtime improvement measured."
+}

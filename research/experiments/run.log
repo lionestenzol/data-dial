@@ -1,0 +1,120 @@
+[redun] Upgrading db from version -1.0 to 3.6...
+[redun] Start Execution 16f74f27-32df-43b8-970b-286cf5033430:  redun 'riv_smoke.execute('"'"'(module (func (export "f") (param i64) (result i64) (i64.add (local.get 0) (i64.const 5))))'"'"', 7)'
+[redun] Run    Job 1ad92621:  riv_smoke.execute(wat='(module (func (export "f") (param i64) (result i64) (i64.add (local.get 0) (i64.const 5))))', value=7) on default
+[redun] 
+[redun] | JOB STATUS 2026/11/26 07:16:15
+[redun] | TASK              PENDING RUNNING  FAILED  CACHED    DONE   TOTAL
+[redun] | 
+[redun] | ALL                     0       0       0       0       1       1
+[redun] | riv_smoke.execute       0       0       0       0       1       1
+[redun] 
+[redun] 
+[redun] Execution duration: 0.05 seconds
+[redun] Start Execution 832c35fa-6ccf-44cd-9bc4-56d198b3fa2d:  redun 'riv_smoke.execute('"'"'(module (func (export "f") (param i64) (result i64) (i64.add (local.get 0) (i64.const 5))))'"'"', 7)'
+[redun] Cached Job 21d98fd8:  riv_smoke.execute(wat='(module (func (export "f") (param i64) (result i64) (i64.add (local.get 0) (i64.const 5))))', value=7) (eval_hash=e5f331ee, call_hash=None)
+[redun] 
+[redun] | JOB STATUS 2026/11/26 07:16:15
+[redun] | TASK              PENDING RUNNING  FAILED  CACHED    DONE   TOTAL
+[redun] | 
+[redun] | ALL                     0       0       0       1       0       1
+[redun] | riv_smoke.execute       0       0       0       1       0       1
+[redun] 
+[redun] 
+[redun] Execution duration: 0.01 seconds
+[redun] Start Execution 2ffc34f2-7595-418d-a05c-9d499f71e576:  redun 'riv_smoke.execute('"'"'(module (func (export "f") (param i64) (result i64) (i64.add (local.get 0) (i64.const 5))))'"'"', 7)'
+[redun] Cached Job 38e26300:  riv_smoke.execute(wat='(module (func (export "f") (param i64) (result i64) (i64.add (local.get 0) (i64.const 5))))', value=7) (eval_hash=e5f331ee, call_hash=None)
+[redun] 
+[redun] | JOB STATUS 2026/11/26 07:16:15
+[redun] | TASK              PENDING RUNNING  FAILED  CACHED    DONE   TOTAL
+[redun] | 
+[redun] | ALL                     0       0       0       1       0       1
+[redun] | riv_smoke.execute       0       0       0       1       0       1
+[redun] 
+[redun] 
+[redun] Execution duration: 0.01 seconds
+[redun] Start Execution 2f9cd794-60c5-429b-bb95-c9c56fd331c1:  redun 'riv_smoke.execute('"'"'(module (func (export "f") (param i64) (result i64) (i64.add (local.get 0) (i64.const 5))))'"'"', 8)'
+[redun] Run    Job e857b589:  riv_smoke.execute(wat='(module (func (export "f") (param i64) (result i64) (i64.add (local.get 0) (i64.const 5))))', value=8) on default
+[redun] 
+[redun] | JOB STATUS 2026/11/26 07:16:15
+[redun] | TASK              PENDING RUNNING  FAILED  CACHED    DONE   TOTAL
+[redun] | 
+[redun] | ALL                     0       0       0       0       1       1
+[redun] | riv_smoke.execute       0       0       0       0       1       1
+[redun] 
+[redun] 
+[redun] Execution duration: 0.03 seconds
+[redun] Start Execution dcc7c5a7-3277-494c-ab49-79708c3bcdc1:  redun 'riv_smoke.execute('"'"'(module (func (export "f") (param i64) (result i64) (i64.add (local.get 0) (i64.const 5))))'"'"', 7)'
+[redun] Cached Job 770c341c:  riv_smoke.execute(wat='(module (func (export "f") (param i64) (result i64) (i64.add (local.get 0) (i64.const 5))))', value=7) (eval_hash=e5f331ee, call_hash=None)
+[redun] 
+[redun] | JOB STATUS 2026/11/26 07:16:15
+[redun] | TASK              PENDING RUNNING  FAILED  CACHED    DONE   TOTAL
+[redun] | 
+[redun] | ALL                     0       0       0       1       0       1
+[redun] | riv_smoke.execute       0       0       0       1       0       1
+[redun] 
+[redun] 
+[redun] Execution duration: 0.01 seconds
+[redun] Upgrading db from version -1.0 to 3.6...
+[redun] Start Execution b1d2b4da-4273-44a6-8091-8b8e02fb2d85:  redun 'riv_smoke.execute('"'"'(module (func (export "f") (param i64) (result i64) (i64.add (local.get 0) (i64.const 5))))'"'"', 7)'
+[redun] Run    Job 694b24b8:  riv_smoke.execute(wat='(module (func (export "f") (param i64) (result i64) (i64.add (local.get 0) (i64.const 5))))', value=7) on default
+[redun] 
+[redun] | JOB STATUS 2026/11/26 07:16:15
+[redun] | TASK              PENDING RUNNING  FAILED  CACHED    DONE   TOTAL
+[redun] | 
+[redun] | ALL                     0       0       0       0       1       1
+[redun] | riv_smoke.execute       0       0       0       0       1       1
+[redun] 
+[redun] 
+[redun] Execution duration: 0.04 seconds
+[redun] Start Execution 2585b816-9e5a-45ab-aba8-2db72daf2fc1:  redun 'riv_smoke.execute('"'"'(module (func (export "f") (param i64) (result i64) (i64.add (i64.mul (i64.add (local.get 0) (i64.const 0)) (i64.const 1)) (i64.const 5))))'"'"', 7)'
+[redun] Run    Job ac69d579:  riv_smoke.execute(wat='(module (func (export "f") (param i64) (result i64) (i64.add (i64.mul (i64.add (local.get 0) (i64.const 0)) (i64.const 1)) (i64.const 5))))', value=7) on default
+[redun] 
+[redun] | JOB STATUS 2026/11/26 07:16:16
+[redun] | TASK              PENDING RUNNING  FAILED  CACHED    DONE   TOTAL
+[redun] | 
+[redun] | ALL                     0       0       0       0       1       1
+[redun] | riv_smoke.execute       0       0       0       0       1       1
+[redun] 
+[redun] 
+[redun] Execution duration: 0.02 seconds
+[redun] Start Execution cba851c7-5a6b-44ae-b3ad-382930c6ff82:  redun 'riv_smoke.execute('"'"'(module (func (export "f") (param i64) (result i64) (i64.add (i64.add (i64.mul (local.get 0) (i64.const 1)) (i64.const 5)) (i64.const 0))))'"'"', 7)'
+[redun] Run    Job 15593bdf:  riv_smoke.execute(wat='(module (func (export "f") (param i64) (result i64) (i64.add (i64.add (i64.mul (local.get 0) (i64.const 1)) (i64.const 5)) (i64.const 0))))', value=7) on default
+[redun] 
+[redun] | JOB STATUS 2026/11/26 07:16:16
+[redun] | TASK              PENDING RUNNING  FAILED  CACHED    DONE   TOTAL
+[redun] | 
+[redun] | ALL                     0       0       0       0       1       1
+[redun] | riv_smoke.execute       0       0       0       0       1       1
+[redun] 
+[redun] 
+[redun] Execution duration: 0.02 seconds
+{
+  "status": "PASS",
+  "python": "3.12.14",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "versions": {
+    "egglog": "14.0.0",
+    "redun": "0.51.1",
+    "wasmtime": "51.0.0"
+  },
+  "normalized": [
+    "Num.var(\"x\") + Num(5)",
+    "Num.var(\"x\") + Num(5)",
+    "Num.var(\"x\") + Num(5)"
+  ],
+  "unique_modules": 1,
+  "canonical_first_guest_executions": 1,
+  "changed_input_guest_executions": 1,
+  "restart_additional_guest_executions": 0,
+  "baseline_guest_executions": 3,
+  "independent_input_form_checks": 300,
+  "normalization_seconds_single_run": 0.006818954000010535,
+  "limitations": [
+    "Three identity-rewrite examples only",
+    "No upstream full test suites run",
+    "No speedup benchmark",
+    "Single host only",
+    "Rules supplied by experiment author",
+    "No synthesis, compressed-query, networking, or capability-learning validation"
+  ]
+}
