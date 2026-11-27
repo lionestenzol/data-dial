@@ -1,3 +1,7 @@
+> **Superseded as top-level frame by `GIR_SPEC.md`.** This page is now one
+> mechanism cell within the GIR objective: GENERATE/ACTIVATE under E_bitwise.
+> It remains the clearest statement of the dial; read it after GIR_SPEC.md.
+
 # The thesis
 
 Read this before `HANDOFF.md`. It is what the project is actually about. Every

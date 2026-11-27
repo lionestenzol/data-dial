@@ -353,7 +353,33 @@
       "objective": "Draw the artifact-vs-generator cost curve and show the dial picks the cheaper side at every point.",
       "status": "dormant",
       "stated_in": "THESIS.md#the-experiment-that-was-never-run",
-      "note": "THE thesis experiment, never run. 002-008 all tested selection among equivalent expression FORMS - a sub-tactic. The real selection is artifact-vs-generator per item on a network-vs-compute cost model, tested once (the v1 sim, day one) and won. One workload spanning cheap->expensive artifacts; three arms send-artifact / send-rsync-delta / send-generator-and-rebuild; metric total bytes + receiver compute + verification; byte-exact; baseline rsync, which already nearly tied on documents. Every prior result is a point on this curve: 008 is the cheap end (bytes win), v1 sim the expensive end (generator wins 78 vs 285 MB), rsync-on-documents the crossover."
+      "note": "THE thesis experiment, never run. 002-008 all tested selection among equivalent expression FORMS - a sub-tactic. The real selection is artifact-vs-generator per item on a network-vs-compute cost model, tested once (the v1 sim, day one) and won. One workload spanning cheap->expensive artifacts; three arms send-artifact / send-rsync-delta / send-generator-and-rebuild; metric total bytes + receiver compute + verification; byte-exact; baseline rsync, which already nearly tied on documents. Every prior result is a point on this curve: 008 is the cheap end (bytes win), v1 sim the expensive end (generator wins 78 vs 285 MB), rsync-on-documents the crossover. Under GIR this is the DIAL within the GENERATE mechanism; it must be measured against the distributed-source-coding bound H(X|K_B), not just against rsync (O-dsc-position)."
+    },
+    {
+      "id": "O-gir-frame",
+      "objective": "Adopt the GIR generalized objective: realize X'=X at B by any mechanism; transport is one option.",
+      "status": "closed",
+      "stated_in": "GIR_SPEC.md",
+      "evidence": {
+        "experiment": "spec adoption",
+        "commit": "HEAD",
+        "findings_section": "GIR_SPEC.md"
+      },
+      "note": "Supersedes THESIS.md as top-level frame; THESIS (send-the-generator) is one cell (GENERATE/ACTIVATE under E_bitwise). The single cross-node judge is K(X|K_B)+resolution cost vs transmitting X; section 6 is the boundary that makes the frame actionable rather than 'all of CS'. Full spec in research/GIR_SPEC_FULL.md."
+    },
+    {
+      "id": "O-dsc-position",
+      "objective": "Position GIR against distributed source coding (Slepian-Wolf/Wyner-Ziv) - the proven bound for its objective.",
+      "status": "dormant",
+      "stated_in": "GIR_SPEC.md#the-prior-art-9-demands-be-found-before-any-synthesis",
+      "note": "Section 9 requires finding existing generalized architectures before synthesis. DSC proves X compresses to H(X|K_B) with side info at the decoder - the formal home of the whole objective, and it was missing from the 35-card screen. rsync is a practical instance, which is why it kept tying the dial. Any novelty claim must be stated as a delta from this bound (the per-object dial + exact cross-generator reconstruction), not as beating transmission. Blocked in practice by arxiv being unreachable; the bound itself is textbook and carded."
+    },
+    {
+      "id": "O-node-investigation",
+      "objective": "Classify established mechanisms for all ten GIR nodes; mark proven/available/gap/impossible per section 9.",
+      "status": "dormant",
+      "stated_in": "research/GIR_SPEC_FULL.md#9-required_investigation",
+      "note": "First pass done in GIR_SPEC.md node table. Biggest gaps: distributed source coding (06/07), counter-based/jump-ahead generation (02, carded), residue/CRT factored state (03). Nodes 08/09 largely covered by existing cards (redun, Nix, Bazel, Wasmtime). Full node-by-node cards are the next research block if the user wants depth."
     }
   ],
   "exit_criteria": [

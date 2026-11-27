@@ -628,5 +628,41 @@
     "additional_sources": "https://arxiv.org/pdf/2606.19719 (BLOCKED here); 2008 survey 'Query Processing over Relational Databases with Semantic Cache' unverified",
     "evidence": "Documented via web-search summaries only; NO paper read (arxiv.org does not resolve here)",
     "checked_date": "2026-11-27"
+  },
+  {
+    "title": "Distributed source coding (Slepian-Wolf, Wyner-Ziv)",
+    "url": "https://en.wikipedia.org/wiki/Slepian%E2%80%93Wolf_coding",
+    "capability": "Compress X to H(X|K_B) using correlated side information at the DECODER, without the encoder holding K_B",
+    "implementation_status": "Foundational information theory (Slepian-Wolf 1973 lossless; Wyner-Ziv 1976 lossy); practical codes via LDPC/turbo (DISCUS, PRISM)",
+    "principle": "Binning/syndrome coding: encoder sends a coset index, decoder resolves it against side information K_B",
+    "dependencies": "none (theory); channel-code libraries for practical implementations",
+    "license_screen": "n/a",
+    "published_measurements": "Slepian-Wolf bound H(X|Y) achievable even with separate encoders; textbook. NOT reproduced here.",
+    "limitations": "Proves the ACHIEVABLE BOUND for GIR's objective (section 2, NODE_07) - this is the formal home of the whole project and was absent from the screen. The bound is H(X|K_B): you cannot beat the conditional entropy, which is section 6's wall stated precisely. Practical codes approach it only for well-modelled correlation.",
+    "integration_method": "The bound against which every GIR mechanism is measured; rsync is a practical instance",
+    "custom_work_eliminated": "Any claim to a novel 'send less than X by using receiver knowledge' bound - that bound is known and named",
+    "remaining_gap": "GIR's contribution, if any, is the PER-OBJECT DIAL (when to exploit K_B at all) and EXACT byte-level reconstruction across heterogeneous generators, not the coding bound itself",
+    "smallest_experiment": "Position the v1 sim's savings against H(X|K_B) for its workload: is the dial near the Slepian-Wolf bound, or far from it?",
+    "additional_sources": "Cover & Thomas, Elements of Information Theory, ch.15; arxiv blocked here",
+    "evidence": "Documented from standard information theory; no paper fetched (arxiv does not resolve here)",
+    "checked_date": "2026-11-27"
+  },
+  {
+    "title": "Counter-based / jump-ahead generation (Random123, PCG)",
+    "url": "https://github.com/DEShawResearch/random123",
+    "capability": "Evaluate the nth state of a deterministic sequence directly, without iterating 1..n (NODE_02)",
+    "implementation_status": "Production: Random123 (Philox, Threefry), PCG jump-ahead, counter-mode block ciphers",
+    "principle": "State is a stateless function of a counter: X_n = f(key, n), so random access is O(1) in n",
+    "dependencies": "C/C++ or numpy (numpy.random.Philox exists)",
+    "license_screen": "BSD (Random123)",
+    "published_measurements": "Salmon et al. SC'11: counter-based RNGs match or beat stateful generators and are trivially parallel/seekable. NOT reproduced here.",
+    "limitations": "Realizes NODE_02 (temporal/address-space evaluation without traversal) for DETERMINISTIC sequences only. Does not reduce K(X) for arbitrary X - it addresses structure that already exists.",
+    "integration_method": "Any GIR mechanism that addresses a generated sequence by index rather than replaying it",
+    "custom_work_eliminated": "Jump-ahead / closed-form state evaluation",
+    "remaining_gap": "Only applies where X IS a deterministic function of a cheap index; finding that function for an arbitrary observed X is the hard inverse problem",
+    "smallest_experiment": "n/a yet - relevant once a GIR workload has index-addressable generators",
+    "additional_sources": "numpy.random.Philox; PCG (pcg-random.org)",
+    "evidence": "Documented; numpy ships Philox so locally checkable if needed",
+    "checked_date": "2026-11-27"
   }
 ]

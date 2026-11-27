@@ -1,7 +1,6 @@
 # Handoff
 
-**Read `THESIS.md` before this file** — it is what the project is
-actually about. This file is the operational state; THESIS.md is the point.
+**Read `GIR_SPEC.md` first, then `THESIS.md`** — GIR_SPEC.md is the generalized objective (realize X at B by any mechanism); THESIS.md is one mechanism within it (send the generator); this file is operational state.
 
 Read this first. It is the state of the work, what is proven, what is not,
 and the one experiment that comes next.
