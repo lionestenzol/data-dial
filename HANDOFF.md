@@ -135,10 +135,16 @@ The venv was relocated, so its scripts' shebangs are broken — use
   commutative operands — no algebra engine, no e-graph — captured **81%** of
   the available equivalence wins. SymPy bought the remaining 13 of 70 for 14x
   the cost; egglog bought fewer for 73x.
-- **Normalisation makes execution worse.** SymPy's normal form runs 8,612
-  operations against direct evaluation's 4,983. So there is **no break-even at
-  any operation cost** — the ratio plateaus at 3.00x. Expensive operations
-  cannot rescue the mechanism, which was the escape route we expected.
+- **The free trick also finds the cheapest form.** `memo_canon` executes
+  **2,866 operations — fewer than any other arm**, including the cost-aware
+  one at 3,536. So the algebra engine has no form advantage to sell, and
+  charges 73x the normalisation time (1,964 ms against 27 ms) for a 1.23x
+  worse form. No break-even at any operation cost.
+  *Corrected:* an earlier version of this said normalisation makes execution
+  worse. That is true only of `sympy.expand`, which is a canonical rather than
+  a cheap form; egglog's smallest-term extraction **shrinks** expressions
+  (0.71x direct). The user raised the objection; the conclusion survived it
+  but the stated mechanism did not.
 - **The accumulating e-graph does not run.** It is the architecture's own
   described design, and with ring axioms plus constant folding it aborts on
   memory; the band where it both canonicalises and fits is 2 saturation

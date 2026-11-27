@@ -779,6 +779,41 @@ executes **8,612 operations against direct evaluation's 4,983** — 73% more
 work. Net node growth across the workload was **+12,998**. So the mechanism
 pays a large normalisation cost to produce a *more expensive* program.
 
+### CORRECTION — the mechanism stated below was wrong
+Raised by the user, not found by me: if the fancy arm is optimising for the
+wrong thing, then "normalisation makes execution worse" is a fact about my
+chosen normal form, not about the idea. **That objection is correct.**
+
+`sympy.expand` produces a CANONICAL form, not a CHEAP one; expanding
+`(a+b)*(c+d)` into four products is more work by construction. The
+architecture's claim is *choose among equivalent recipes* — pick the cheapest.
+I implemented *pick the canonical one* and then generalised from it.
+
+The data separates the two, because egglog extracts the **smallest** term and
+is therefore already cost-aware:
+
+| arm | ops executed | vs direct | node growth |
+|---|---|---|---|
+| `memo_sympy` (expand) | 8,612 | 1.73x | **+12,998** |
+| `memo_egglog` (smallest term) | 3,536 | **0.71x** | **−110** |
+
+So normalisation does **not** inherently inflate the program. A cost-aware
+normaliser shrinks it. Every sentence below that attributes the loss to
+normalisation producing a more expensive program is **retracted**, and Y7's
+note is wrong as written.
+
+**The verdict is unchanged, for a better reason.** `memo_canon` — the free
+trick — executes **2,866 operations, fewer than any other arm**, including the
+cost-aware one at 3,536. So on this workload the algebra engine has no form
+advantage to sell: constant folding plus sorting commutative operands already
+finds the cheaper program. And it charges 73x the normalisation time (1,964 ms
+against 27 ms) to deliver a form that is 1.23x worse. Recomputing the sweep
+against the cost-aware arm rather than `expand`: egglog is 1,910x, 296x, 44.5x,
+7.31x, 1.87x, 1.29x of the best baseline across 0 to 10,000 µs/op, converging
+to its 1.23x operation-count ratio. **No break-even at any cost, because its
+form is worse than the free trick's, not because normalisation inflates
+anything.**
+
 ### The prediction that missed, and it missed downward
 Y7 asked where the break-even lies if operations cost more than integer
 arithmetic — the scaling that was supposed to rescue the mechanism. Predicted
@@ -789,11 +824,12 @@ arithmetic — the scaling that was supposed to rescue the mechanism. Predicted
 |---|---|---|---|---|---|---|
 | ratio | 64.1x | 10.0x | 3.43x | 2.96x | 2.99x | **3.00x** |
 
-Because the normalised form does *more* operations, making operations dearer
-hurts the normalising arm faster than it helps it. The curve converges to the
-operation-count ratio and stops. **Expensive operations cannot save this
-mechanism** — which is the opposite of the escape route the pre-registration
-hoped for.
+The curve converges to the operation-count ratio and stops. **Expensive
+operations cannot save this mechanism** — but see the correction above for
+*why*: not because normalisation inflates the program (false in general; true
+only of `expand`), but because the free canonicalisation already produces the
+cheapest form of any arm, so there is no form advantage left for an algebra
+engine to win back at any operation price.
 
 ### The feasibility finding
 The architecture's own description is accumulating structure, so the faithful
