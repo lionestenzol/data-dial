@@ -160,11 +160,12 @@ metric. Recovered waste is the right one.
 
 ## Next experiment
 
-004 and 005 together closed the measured-cost line as originally framed. What
-remains are two specific, bounded questions, and **C is the one that could
-still rescue the mechanism.**
+004, 005 and 006 settled the measured-cost line: structural cost is wrong 4.3%
+of the time, the tail cannot be targeted, and it does not need to be because a
+cheap oracle applied everywhere repays in ~5 requests.
 
-**B is now the only thing standing between this and a defensible claim**, and
+**One experiment is queued. B is the only thing standing between this and a
+defensible claim**, and
 it threatens 004 and 006 together.
 
 **B. Does any of this survive a backend where operator count stops tracking
@@ -202,18 +203,28 @@ end. A backend comparison will need either many more decisions or a
 waste-weighted design that stops treating 536 decisions as 536 independent
 observations.
 
-**(Old item B, now folded into the above.) Does the 004 inversion survive a backend where counting is not enough?**
-004's result is entangled with one backend: vectorised NumPy with no CSE,
-where cost is near-linear in operator count and so counting nodes is close to
-counting memory passes. Re-run the same corpus and the same three arms through
-a backend that fuses (Numba, JAX, or C via Cython) and where operator count
-stops tracking cost. If the weighted arms win there, 004's conclusion is a
-NumPy fact rather than an architectural one, and the honest claim shrinks to
-"the cost model must match the backend's cost structure."
+## Older items never closed
 
-Do not re-run 004 with more corpora, and do not look for more tail predicates
-in the same family — 005 measured why that family fails. The frequency number
-and the targeting question are both settled.
+These predate 004 and are dormant, not finished. They concern **different
+mechanisms** from the cost-model line, so B does not subsume them.
+
+- **Recursive composition** (named in 002's follow-up, never run) — primitives
+  built from primitives, testing whether the substrate gets cheaper to extend
+  as it grows.
+- **Cross-workload transfer** (same) — discover on workload A, evaluate on
+  workload B from a different motif set over the same operators. The
+  difference between compressing a known distribution and accumulating
+  reusable capability.
+- **Economic benefit beyond an optimised cache**
+  (`research/benchmarks/NEXT_EXPERIMENT.md`, "designed, not executed") — the
+  whole architecture against a strong memoisation baseline, not just the cost
+  model. This is the one that would test the *architecture's* claim rather
+  than one component of it.
+
+`research/ARCHITECTURAL_GAPS.md` lists 8 further gaps, but those are
+specification work rather than measurements. Gaps #3 (resolution policy) and
+#4 (end-to-end economics) are now partly answered by 004–006 and should be
+rewritten to say what those experiments settled.
 
 ## Working practices that are load-bearing
 
