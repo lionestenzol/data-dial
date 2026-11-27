@@ -12,3 +12,4 @@ research-incoming/
 !bench/fetch_corpus.sh
 experiments/exp006_timings.json
 experiments/exp007_results.json
+experiments/exp008_results.json

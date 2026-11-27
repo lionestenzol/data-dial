@@ -125,6 +125,32 @@ The venv was relocated, so its scripts' shebangs are broken — use
   repays after ~N uses; the workload sat inside its own break-even. 2 of 6
   predictions hit.
 
+**The central claim has now been tested, and it failed:**
+- **Experiment 008** ran `NEXT_EXPERIMENT.md` as designed — the first test of
+  the architecture's own claim rather than a component of it. Against the
+  design's declared thresholds: zero mismatches **PASS** (0/314, all arms);
+  ≥10% total-time improvement **FAIL** at **−4080%**; ≤10% unrelated
+  regression **FAIL** at +443% and +29449%. 8 of 9 predictions hit.
+- **A free trick beat the architecture.** Constant folding plus sorting
+  commutative operands — no algebra engine, no e-graph — captured **81%** of
+  the available equivalence wins. SymPy bought the remaining 13 of 70 for 14x
+  the cost; egglog bought fewer for 73x.
+- **Normalisation makes execution worse.** SymPy's normal form runs 8,612
+  operations against direct evaluation's 4,983. So there is **no break-even at
+  any operation cost** — the ratio plateaus at 3.00x. Expensive operations
+  cannot rescue the mechanism, which was the escape route we expected.
+- **The accumulating e-graph does not run.** It is the architecture's own
+  described design, and with ring axioms plus constant folding it aborts on
+  memory; the band where it both canonicalises and fits is 2 saturation
+  iterations on six expressions.
+- **What survives.** The only positive result for the central bet is still the
+  v1 sync simulator, where the artifact is **large** and transfer dominates.
+  008 shows the mechanism loses where the artifact is small and execution is
+  cheap. So the surviving claim is about artifacts expensive to transfer or
+  regenerate — **not** about choosing among equivalent recipes. That is far
+  narrower than what this document said above, and it is where any further
+  work should go.
+
 **Retracted — read this before citing the literature screen:**
 - The programme's opening claim, that egg and Stitch *document* the
   structural-proxy gap, is **unsourced and now retracted**. Both quotes in

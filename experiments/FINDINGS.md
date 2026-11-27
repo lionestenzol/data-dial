@@ -726,3 +726,131 @@ verified commit. `exp003_measured_cost_extraction.py`'s docstring, which quoted
 both lines as upstream statements, carries the correction. The CSV is now
 generated from the JSON rather than hand-synced, so those two copies cannot
 diverge again.
+
+## 008 — economic benefit beyond an optimised cache (the architecture's own claim)
+**Why:** `research/benchmarks/NEXT_EXPERIMENT.md` had carried *"Status:
+designed, not executed"* since import. Four of the six exit criteria depend on
+it, and 001–007 all tested components rather than the thesis. This is the first
+experiment in the programme to test the claim itself:
+
+> Choosing among equivalent executable recipes and dependency reuse yields
+> lower total cost than a strong existing optimized memoization baseline on
+> related workloads.
+
+**Workload:** 314 requests, seed 8008, Z/2^64 with `+ - *` only so every
+identity is exact and "zero mismatches" is decidable. All five required case
+types; 100 distinct syntax forms; two of five families held out. The decisive
+cell is `equiv_form` — 70 requests where exact-key memoisation must miss and
+normalisation should hit. Every variant was verified equivalent before entering
+the workload, 0 of 70 rejected.
+
+### Verdict against the design's own declared thresholds
+
+| threshold | result |
+|---|---|
+| zero mismatches | **PASS** — all five arms, 0/314 |
+| ≥10% total-time improvement on primary | **FAIL** — best baseline 1.09 ms against best normalising arm 45.37 ms, **−4080%** |
+| ≤10% median regression on unrelated | **FAIL** — `memo_sympy` +443%, `memo_egglog` +29449% |
+| within the declared 2 GB cap | PASS — 81 MB |
+| persistent e-graph completed | **FAIL** — process aborted (SIGABRT) |
+
+`NEXT_EXPERIMENT.md`'s own rule: *"Otherwise narrow or stop the claimed
+advantage."* **The claimed advantage must be narrowed or stopped.**
+
+### Why it lost, and it is not the obvious reason
+
+| arm | executed | hits | norm cost | ops executed |
+|---|---|---|---|---|
+| 1 direct | 314 | 0 | — | 4,983 |
+| 2 memo (exact key) | 244 | 70 | 0.2 ms | 3,849 |
+| **3 memo_canon (free)** | **187** | **127** | **27 ms** | **2,866** |
+| 4 memo_sympy | 174 | 140 | 377 ms | **8,612** |
+| 5 memo_egglog | 210 | 104 | 1,964 ms | 3,536 |
+
+**A free trick captured 81% of the prize.** Constant folding plus sorting
+commutative operands — no algebra engine, no e-graph — converted 57 of the 70
+equivalent-formulation misses into hits. SymPy bought the remaining 13 for 14x
+the normalisation cost; egglog bought fewer for 73x. Arm 3 was not in the
+design's arm list; it was added because working practice 2 demands the
+strongest existing baseline, and it is the arm that beat the architecture.
+
+**And normalisation made execution worse.** SymPy's expanded normal form
+executes **8,612 operations against direct evaluation's 4,983** — 73% more
+work. Net node growth across the workload was **+12,998**. So the mechanism
+pays a large normalisation cost to produce a *more expensive* program.
+
+### The prediction that missed, and it missed downward
+Y7 asked where the break-even lies if operations cost more than integer
+arithmetic — the scaling that was supposed to rescue the mechanism. Predicted
+≥100 µs/op. **There is no break-even at any cost.** The ratio of
+`memo_sympy` to the best baseline plateaus:
+
+| op cost | 0 µs | 1 µs | 10 µs | 100 µs | 1 ms | 10 ms |
+|---|---|---|---|---|---|---|
+| ratio | 64.1x | 10.0x | 3.43x | 2.96x | 2.99x | **3.00x** |
+
+Because the normalised form does *more* operations, making operations dearer
+hurts the normalising arm faster than it helps it. The curve converges to the
+operation-count ratio and stops. **Expensive operations cannot save this
+mechanism** — which is the opposite of the escape route the pre-registration
+hoped for.
+
+### The feasibility finding
+The architecture's own description is accumulating structure, so the faithful
+arm is **one persistent e-graph** asked whether each new request is already
+equal to something it holds. A fresh e-graph per request cannot do the job at
+all: egglog *proves* `a*b == b*a` yet extracts different representatives from
+two separate e-graphs, so it yields no cache key.
+
+The persistent version does not run. With ring axioms including distributivity
+and i64 constant folding it exhausts memory hard enough that the Rust side
+aborts the interpreter. Budget probe on **six two-term expressions**:
+
+| saturation iterations | outcome |
+|---|---|
+| 1 | survives, fails to prove `2x+3x == 5x` |
+| 2 | survives, canonicalises all three pairs, 11 ms |
+| 3 | survives, 120 ms |
+| 4 | **memory exhausted** |
+
+At 2 iterations it works on six expressions and still aborts on 314. So there
+is a narrow band where the accumulating e-graph both canonicalises and fits,
+and this workload is already outside it.
+
+### Predictions vs actual — 8 of 9
+| | prediction | actual | verdict |
+|---|---|---|---|
+| Y1 | zero mismatches | 0/314, all arms | hit |
+| Y2 | arm 2 avoids 70–75 | exactly 70 | hit |
+| Y3 | free canonicalisation takes ≥50% of equiv_form | **81%** | hit |
+| Y4 | **no arm reaches +10% on primary** | **−4080%** | hit |
+| Y5 | arms 4/5 >10x slower than arm 3 | 11.3x and 57.6x | hit |
+| Y6 | arms 4/5 regress >10% on unrelated | +443%, +29449% | hit |
+| Y7 | break-even ≥100 µs/op | **no break-even exists** | **miss, downward** |
+| Y8 | adversarial blow-up | +12,998 nodes; 117 egglog skips | hit |
+| Y9 | arm 3 retains ≥10% fewer entries | 23% fewer | hit |
+
+### Where this leaves the architecture
+On its own declared workload, against the strongest free baseline, the
+mechanism loses by three orders of magnitude and cannot be rescued by making
+operations expensive. That is a real answer to the thesis, not a null result.
+
+It also closes a loop with 003–007. The one thing that could stop normalisation
+making execution worse is **cost-aware** extraction — choosing a cheap
+representative rather than a canonical one. That is exactly what 003–007
+studied, and they found it is barely better than counting nodes (004) and
+unaffordable where candidates must be compiled (007). The component line and
+the architecture line meet here, and both say the same thing: the selection
+machinery is not where the value is.
+
+### Honest limits
+One workload, specified by the design: integer arithmetic over Z/2^64 with
+`+ - *`. SymPy's `expand` is one normal form and a deliberately canonical one;
+a cost-aware or factored normal form would execute better, and that variant is
+untested. The persistent e-graph was run with one axiom set — dropping
+distributivity makes it fit but then it cannot prove the equivalences that
+matter. `stitch` (arm 6) was declared not run: optional in the design and not
+installed. Transferred bytes are reported but near-meaningless here, because an
+integer result is smaller than any descriptor of it; that term only bites on
+workloads where the artifact is large, which is the v1 sync case rather than
+this one.

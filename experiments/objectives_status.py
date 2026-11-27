@@ -23,12 +23,17 @@ import re
 import sys
 
 LEDGER = pathlib.Path("research/OBJECTIVES.json")
-STATUSES = ("closed", "closed-superseded", "queued", "blocked", "dormant",
-            "spec-gap", "abandoned")
+# closed-negative exists because experiment 008 exposed a real defect here:
+# an objective that was TESTED AND FAILED was ticking its exit criteria, since
+# the renderer only asked whether the objective was closed. Being answered and
+# being answered favourably are different things, and only the second can
+# satisfy an "ESTABLISHED if" criterion.
+STATUSES = ("closed", "closed-negative", "closed-superseded", "queued",
+            "blocked", "dormant", "spec-gap", "abandoned")
 # Status order for display: what is done, what is next, what is parked.
 ORDER = {s: i for i, s in enumerate(
-    ("closed", "closed-superseded", "queued", "blocked", "dormant",
-     "spec-gap", "abandoned"))}
+    ("closed", "closed-negative", "closed-superseded", "queued", "blocked",
+     "dormant", "spec-gap", "abandoned"))}
 OPEN_STATUSES = ("queued", "blocked", "dormant", "spec-gap")
 
 SEARCH_DOCS = ("HANDOFF.md", "README.md", "RESULTS.md",
@@ -220,13 +225,29 @@ def render(led):
         print(f"\n  {label}:")
         for c in led.get(key, []):
             deps = [by_id[d] for d in c["depends_on"]]
-            done = all(d["status"].startswith("closed") for d in deps)
-            open_deps = [d["id"] for d in deps if not d["status"].startswith("closed")]
-            mark = "x" if done else " "
+            # An explicit per-criterion outcome wins over the dependency
+            # inference. Experiment 008 failed overall while PASSING the
+            # zero-mismatch threshold, and inferring from the objective alone
+            # reported that passing threshold as unmet.
+            if "met" in c:
+                mark = "x" if c["met"] else "!"
+                print(f"    [{mark}] {c['criterion']}")
+                print(f"        threshold: {c.get('threshold','-')}")
+                print(f"        {'MET' if c['met'] else 'TESTED AND NOT MET'}"
+                      f" by {c.get('met_by','?')}   [{c['source']}]")
+                continue
+            done = all(d["status"] == "closed" for d in deps)
+            failed = [d["id"] for d in deps if d["status"] == "closed-negative"]
+            open_deps = [d["id"] for d in deps if d["status"] != "closed"]
+            mark = "x" if done else ("!" if failed else " ")
             print(f"    [{mark}] {c['criterion']}")
             print(f"        threshold: {c.get('threshold','-')}")
-            print(f"        blocked on: {', '.join(open_deps) or 'nothing'}"
-                  f"   [{c['source']}]")
+            if failed:
+                print(f"        TESTED AND NOT MET via: {', '.join(failed)}"
+                      f"   [{c['source']}]")
+            else:
+                print(f"        blocked on: {', '.join(open_deps) or 'nothing'}"
+                      f"   [{c['source']}]")
 
     openq = [o for o in objs if o["status"] in OPEN_STATUSES]
     ready = [o for o in openq if not o.get("blocked_by")]

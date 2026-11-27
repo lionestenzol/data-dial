@@ -15,12 +15,15 @@
     {
       "id": "O-bet",
       "objective": "Is sending the recipe for an artifact worth more than hunting for duplicate bytes?",
-      "status": "blocked",
+      "status": "closed-negative",
       "stated_in": "HANDOFF.md#what-the-project-is",
-      "blocked_by": [
-        "O-memo-baseline"
-      ],
-      "note": "The programme's central bet. No experiment to date tests it; 001-006 all test one component, the cost model. O-memo-baseline is the only queued-or-dormant item that would."
+      "blocked_by": [],
+      "note": "First direct test, via O-memo-baseline, and it failed on the declared workload. NOT fully settled: the one positive result for the central bet remains the v1 sync simulator (78.57 MB against 284.83 full sync and 282.88 rsync, 0 checker failures in 414 messages), where the artifact is LARGE and transfer dominates. 008 shows the mechanism loses where the artifact is small and execution is cheap. The surviving form of the bet is therefore about artifacts expensive to transfer or regenerate, not about choosing among equivalent recipes - and that is a much narrower claim than HANDOFF states.",
+      "evidence": {
+        "experiment": "008",
+        "commit": "HEAD",
+        "findings_section": "experiments/FINDINGS.md#008--economic-benefit-beyond-an-optimised-cache-the-architectures-own-claim"
+      }
     },
     {
       "id": "O-v1-sim",
@@ -230,9 +233,15 @@
     {
       "id": "O-memo-baseline",
       "objective": "Does representation-aware reuse lower total cost against optimised execution plus memoisation - the strongest existing baseline?",
-      "status": "dormant",
+      "status": "closed-negative",
       "stated_in": "research/benchmarks/NEXT_EXPERIMENT.md",
-      "note": "Marked 'Status: designed, not executed' since import. This is the only item that tests O-bet, the architecture's own claim, rather than one component. research/RIV_Research_Report.md section 7 independently names it as the next experiment, so two documents disagree with HANDOFF about what is next."
+      "note": "TESTED AND FAILED on the declared workload. 8 of 9 predictions hit. Against the design's own thresholds: zero mismatches PASS (0/314, all arms); >=10% total-time improvement FAIL at -4080% (best baseline 1.09ms vs best normalising arm 45.37ms); <=10% unrelated regression FAIL at +443% (sympy) and +29449% (egglog); memory cap PASS. A FREE trick - constant folding plus sorting commutative operands - captured 81% of the available equivalence wins, and SymPy's normal form executes 8612 operations against direct evaluation's 4983, so normalisation buys a MORE expensive program. No break-even exists at any operation cost: the ratio plateaus at 3.00x. The persistent e-graph, which is the architecture's own accumulate-structure design, aborts on memory. NEXT_EXPERIMENT.md's rule applies: narrow or stop the claimed advantage.",
+      "evidence": {
+        "experiment": "008",
+        "commit": "HEAD",
+        "scorecard": "experiments/exp008_scorecard.json",
+        "preregistration": "experiments/EXP008_PREREGISTRATION.md"
+      }
     },
     {
       "id": "O-multi-resource",
@@ -346,7 +355,9 @@
       "depends_on": [
         "O-memo-baseline"
       ],
-      "source": "research/benchmarks/NEXT_EXPERIMENT.md"
+      "source": "research/benchmarks/NEXT_EXPERIMENT.md",
+      "met": true,
+      "met_by": "experiment 008: 0 mismatches of 314 requests, all five arms"
     },
     {
       "id": "X-improvement",
@@ -355,7 +366,9 @@
       "depends_on": [
         "O-memo-baseline"
       ],
-      "source": "research/benchmarks/NEXT_EXPERIMENT.md"
+      "source": "research/benchmarks/NEXT_EXPERIMENT.md",
+      "met": false,
+      "met_by": "experiment 008: -4080% on primary, needed >= +10%"
     },
     {
       "id": "X-no-regression",
@@ -364,7 +377,9 @@
       "depends_on": [
         "O-memo-baseline"
       ],
-      "source": "research/benchmarks/NEXT_EXPERIMENT.md"
+      "source": "research/benchmarks/NEXT_EXPERIMENT.md",
+      "met": false,
+      "met_by": "experiment 008: +443% (sympy) and +29449% (egglog) median on unrelated, needed <= +10%"
     },
     {
       "id": "X-strongest-baseline",
@@ -373,7 +388,9 @@
       "depends_on": [
         "O-memo-baseline"
       ],
-      "source": "HANDOFF.md working practice 2"
+      "source": "HANDOFF.md working practice 2",
+      "met": false,
+      "met_by": "experiment 008: the strongest baseline (free canonicalisation) WON, taking 81% of the available wins"
     },
     {
       "id": "X-portable",
