@@ -6,4 +6,4 @@ are counted as if they had been sent.
 """
 
 __all__ = ["keys", "chunker", "store", "thumb", "manifest", "wire",
-           "router", "checker", "jlog", "device"]
+           "router", "checker", "jlog", "device", "generators"]

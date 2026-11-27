@@ -39,6 +39,8 @@ class RunResult:
     time_to_visible_ms: float = 0.0
     time_to_open_ms: float = 0.0
     fallbacks: int = 0
+    regen_ms: float = 0.0        # CPU B spent regenerating (the arm's trade)
+    regen_count: int = 0         # how many artifacts arrived as recipes
 
 
 class Engine:
@@ -136,6 +138,12 @@ class Engine:
         v = self._send(msg)
         if v.ok:
             return 0
+        if msg.form == "generate" and want is not None:
+            # A regenerate that did not reproduce the bytes (absent generator,
+            # version skew, nondeterminism) is not worth retrying: go to raw.
+            self._raw_fallback(want)
+            self.raw_done.add(want.key.kid)
+            return 1
         if want is not None and v.missing_hashes:
             # rebuilt file short of chunks: ask for them, then try again
             self._send(self._chunk_msg(want, v.missing_hashes,
@@ -175,6 +183,17 @@ class Engine:
         rec["checker"] = "fallback" if v.ok else "fail"
         rec["reason"] = v.reason
 
+    def _attach_gen(self, want: router.Want) -> router.Want:
+        """If A kept a recipe for this exact original and B can run it, mark the
+        want so the router ships the recipe instead of the bytes.  Only for the
+        original itself (not a thumbnail stand-in)."""
+        rec = self.a.provenance.get(want.path)
+        if (rec is not None
+                and want.key.kid == want.file_key.kid
+                and rec.generator in self.b.can_generate):
+            want.gen = rec
+        return want
+
     # -- the day's change set --------------------------------------------
     def _snapshot_path(self) -> Path:
         return self.a.state / "sent_manifest.json"
@@ -208,8 +227,8 @@ class Engine:
                 tk = self.a.store.get_key(e.thumb_kid)
                 library.append(router.Want(e.path, tk, e.size, True, fk))
             else:
-                library.append(router.Want(e.path, fk, e.size,
-                                           e.kind == PHOTO, fk))
+                library.append(self._attach_gen(
+                    router.Want(e.path, fk, e.size, e.kind == PHOTO, fk)))
         t0 = time.perf_counter()
         falls = self.run_plan(library)
         t_visible = (time.perf_counter() - t0) * 1000.0
@@ -221,7 +240,8 @@ class Engine:
             for p in opened:
                 e = entries[p]
                 fk = self.a.store.get_key(e.file_kid)
-                wants.append(router.Want(p, fk, e.size, e.kind == PHOTO, fk))
+                wants.append(self._attach_gen(
+                    router.Want(p, fk, e.size, e.kind == PHOTO, fk)))
             t1 = time.perf_counter()
             falls += self.run_plan(wants)
             t_open = (time.perf_counter() - t1) * 1000.0 / len(opened)
@@ -232,4 +252,5 @@ class Engine:
             if r.path in files:
                 files[r.path].final = r.shown_as
         return RunResult(man, files, rows, opened, changed,
-                         t_visible, t_open, falls)
+                         t_visible, t_open, falls,
+                         self.rx.regen_ms, self.rx.regen_count)
