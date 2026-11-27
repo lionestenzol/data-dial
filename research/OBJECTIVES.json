@@ -15,15 +15,12 @@
     {
       "id": "O-bet",
       "objective": "Is sending the recipe for an artifact worth more than hunting for duplicate bytes?",
-      "status": "closed-negative",
+      "status": "blocked",
       "stated_in": "HANDOFF.md#what-the-project-is",
-      "blocked_by": [],
-      "note": "First direct test, via O-memo-baseline, and it failed on the declared workload. NOT fully settled: the one positive result for the central bet remains the v1 sync simulator (78.57 MB against 284.83 full sync and 282.88 rsync, 0 checker failures in 414 messages), where the artifact is LARGE and transfer dominates. 008 shows the mechanism loses where the artifact is small and execution is cheap. The surviving form of the bet is therefore about artifacts expensive to transfer or regenerate, not about choosing among equivalent recipes - and that is a much narrower claim than HANDOFF states.",
-      "evidence": {
-        "experiment": "008",
-        "commit": "HEAD",
-        "findings_section": "experiments/FINDINGS.md#008--economic-benefit-beyond-an-optimised-cache-the-architectures-own-claim"
-      }
+      "blocked_by": [
+        "O-crossover"
+      ],
+      "note": "REFRAMED - see THESIS.md. The bet is not 'choose among equivalent recipes' (that sub-tactic is what 008 tested and lost on cheap artifacts). The bet is: the generator is the primary object and the artifact a cached render, so send whichever is cheaper - bytes for cheap artifacts, generator for expensive ones. 008 is the cheap end of that curve, the v1 sim the expensive end. Not refuted; the thesis experiment is O-crossover and has never been run. closed-negative was too strong - it recorded a sub-tactic failing, not the bet."
     },
     {
       "id": "O-v1-sim",
@@ -350,6 +347,13 @@
       "status": "dormant",
       "stated_in": "experiments/FINDINGS.md#honest-limits",
       "note": "004's headline rests on a p95 regret gap of 1.451 vs 1.517 - 4.5% - from best-of-N perf_counter in ONE process, with every noise floor measured back-to-back in that same process. Verified about this machine: no virtualised PMU (/sys/bus/event_source/devices has no cpu node; perf_event_open(PERF_TYPE_HARDWARE) returns ENOENT), so hardware counters are permanently unavailable and installing perf would not help; and no cpufreq and no intel_pstate, so frequency and throttling are not merely uncontrolled but UNOBSERVABLE. Two zero-noise instruments ARE installed: llvm-mca 18.1.3 (host sapphirerapids) and cachegrind 3.22 (deterministic I refs). Plan: score the same candidates under wall clock, cachegrind I refs and llvm-mca, and report whether the winning arm changes with the oracle. Read Block RThroughput for vector-over-inputs and Total Cycles for serial scalar - mixing them yields a confidently wrong cost model."
+    },
+    {
+      "id": "O-crossover",
+      "objective": "Draw the artifact-vs-generator cost curve and show the dial picks the cheaper side at every point.",
+      "status": "dormant",
+      "stated_in": "THESIS.md#the-experiment-that-was-never-run",
+      "note": "THE thesis experiment, never run. 002-008 all tested selection among equivalent expression FORMS - a sub-tactic. The real selection is artifact-vs-generator per item on a network-vs-compute cost model, tested once (the v1 sim, day one) and won. One workload spanning cheap->expensive artifacts; three arms send-artifact / send-rsync-delta / send-generator-and-rebuild; metric total bytes + receiver compute + verification; byte-exact; baseline rsync, which already nearly tied on documents. Every prior result is a point on this curve: 008 is the cheap end (bytes win), v1 sim the expensive end (generator wins 78 vs 285 MB), rsync-on-documents the crossover."
     }
   ],
   "exit_criteria": [
