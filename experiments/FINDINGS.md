@@ -553,3 +553,96 @@ in this programme.
 `exp006_candidate_exprs.json.gz` holds every admitted candidate's `srepr`, so
 item B can re-time the identical candidate sets on another backend without
 regenerating them through SymPy.
+
+## 007 — does charging compilation undo 006? (yes)
+**Why:** 006 concluded a cheap oracle applied to every decision breaks even in
+4.7 requests per expression, and on that basis the standing recommendation
+became "keep measured costing, run a cheap oracle everywhere, do not build a
+detector." That number charges **evaluation time only**. On any compiling
+backend you cannot time a candidate without first compiling it. `HANDOFF.md`
+flagged the hole when the result was written and said the term could undo 006
+on its own. It does.
+
+**Backend:** `sympy.ccode` scalar body + a hand-written loop, `gcc -O2 -shared
+-fPIC -march=native`, loaded with `ctypes`. Zero new dependencies. The compile
+charge is the wall time of the `gcc` subprocess. 538 decisions, 2,287
+candidates, 605 s. Accuracy re-admitted on the C output at 1e-6 against a
+30-digit reference.
+
+### The accounting is the result
+
+| accounting | break-even (requests per expression) | vs 200 bar |
+|---|---|---|
+| 006's, evaluation only, on this backend | 63.7 | — |
+| **marginal — `k−1` compiles charged** | **5,733** `[4,247, 7,928]` | **29x over** |
+| gross — all `k` compiles charged | 7,440 | 37x over |
+
+Charging every compile to the oracle would have been the easy move and it is
+wrong: a no-oracle policy must still compile whatever form it chose, so only
+`k−1` compiles are the oracle's *marginal* cost. **006 fails by 29x even on
+that generous reading**, and the bootstrap interval does not come near the bar.
+
+### Predictions vs actual — 6 of 6
+| | prediction | actual | verdict |
+|---|---|---|---|
+| W1 | compile ≥ 100x evaluation | 46.8 ms vs 403.7 µs = **116x** | hit |
+| W2 | gross break-even > 200 | 7,440 | hit |
+| W3 | **marginal** break-even > 200 | **5,733** `[4,247, 7,928]` | hit |
+| W4 | marginal in [1,000, 50,000] | 5,733 | hit |
+| W5 | C waste within 3x of NumPy's | 16.31% vs 14.91% = **1.09x** | hit |
+| W6 | break-even varies <1.2x across probe sizes | **1.011x** | hit |
+
+### The finding worth carrying forward
+**The waste is real and backend-independent; the method for finding it is not.**
+
+W5 is the one that makes this more than a negative result. Structural selection
+leaves **16.31% of runtime** on the table under compiled C against **14.91%**
+under NumPy — the prize is essentially the same size on both. What changes by
+three orders of magnitude is the *price of discovering it*. So 006's conclusion
+was never about measurement being good; it was about NumPy evaluation being
+cheap. Stated as a rule:
+
+> **Measured cost selection is viable only where evaluation is cheap relative
+> to compilation.** On an interpreted or vectorised backend that holds and the
+> oracle repays in ~5 requests. Where candidates must be compiled to be timed,
+> it does not hold, and the structural model is the only affordable selector —
+> which is the one 004 found was the better selector anyway.
+
+W6 closes the obvious escape. 006's cheap-probe trick was its whole advantage,
+and it is now worthless: break-even varies **1.011x** across probe sizes
+256/1024/4096, because one compiled artifact serves both probe and deployment,
+so shrinking the probe shrinks a term that is no longer dominant.
+
+### Two things that did not go as expected
+- **`-ffast-math` disqualified nothing.** 2,287 candidates admitted under
+  `-O2`, 2,287 under `-O2 -ffast-math`, with the same 86 rejected by both. The
+  flag was held out of the primary arm because it was expected to interact with
+  the 1e-6 admission; at that tolerance it does not.
+- **gcc already does the strength reduction that drove much of 004.** In C,
+  `as_written` and `powexp/as_written` time within 1% of each other, because
+  `pow(x,2)` is compiled to `x*x` regardless. The pow-vs-mul inversion that
+  collapsed exact-oracle match to 20.3% in 004 is a property of NumPy's
+  dispatch, not of arithmetic. This matters for `O-008`: a whole candidate
+  family that mattered on NumPy is inert under a compiler.
+
+### Honest limits
+One machine, one compiler, one flag set. `gcc -O2` is not an aggressive fuser —
+and the smoke test measured hand-fused C at only **0.97x NumPy** at 16,384
+elements, because NumPy's per-operator loops are already L2-resident and
+bandwidth-bound at that size. So this experiment establishes what charging
+compilation does to the *economics*; it does **not** establish a backend where
+operator count stops tracking cost, which is what `O-008` needs and what
+`O-fusion-premise` now tracks. A JIT with a cheaper compile step (numba's
+~50–200 ms is in the same range as gcc's 46.8 ms, so probably not) or a
+persistent compilation cache would change the arithmetic, and neither is tested.
+
+### Harness defects found
+- **SIGBUS killed two full runs at exactly core 50.** The build filename came
+  from `len(rows)`, which only advances when a decision is *kept*, so the first
+  skipped core made the next one reuse the same paths; `gcc -o` then rewrote a
+  `.so` that a loaded `ctypes.CDLL` still had mmap'd. Overwriting a mapped file
+  in place is a bus error, and it kills the interpreter with no traceback.
+  Unlinking a mapped file would have been fine. Fixed with a monotonic counter.
+  The diagnostic lesson: both runs died at the *same* core, which means
+  deterministic, and one foreground run to capture the exit signal (135) was
+  cheaper than the process-group theory it was first blamed on.

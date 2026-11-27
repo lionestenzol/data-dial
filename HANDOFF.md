@@ -88,7 +88,14 @@ The venv was relocated, so its scripts' shebangs are broken — use
   the problem dissolves: ranking candidates on **256-element probe arrays with
   a single repeat** costs 55 ms across 536 decisions and breaks even in
   **4.7 requests per expression**, bootstrap [1.9, 24.0], against the same
-  200-request bar. 5 of 7 predictions hit.
+  200-request bar. 5 of 7 predictions hit. **Scoped by 007 — that figure
+  charges evaluation only and holds only on a backend where evaluation is
+  cheap relative to compilation.**
+- **Experiment 007 — scopes 006.** 006 charged evaluation time only. Charge
+  compilation, on a C/gcc backend, and the same policy needs **5,733 requests
+  per expression**, bootstrap [4,247, 7,928], against the 200 bar — 29x over,
+  on the *generous* accounting that charges the oracle only the `k−1`
+  compilations a no-oracle policy would not have paid. 6 of 6 predictions hit.
 
 **Measured, and negative — read this before building on 003:**
 - **004 inverted the programme's central assumption.** Plain AST-size node
@@ -167,10 +174,25 @@ cost, breaking even in 4.7 requests per expression.** A cheap oracle on *every*
 decision (4.7) beats perfect targeting of the expensive one (11.7). The
 detector problem 005 could not solve does not need solving.
 
-So the standing recommendation is now: **keep measured costing, run a cheap
-oracle everywhere, and do not build a detector.** The operating point is
-probe arrays two orders of magnitude smaller than the deployed size, one
-timing repeat, and no targeting.
+So the standing recommendation is **conditional on the backend**, and 007 is
+what makes it conditional:
+
+> **Measured cost selection is viable only where evaluation is cheap relative
+> to compilation.** Where it is — interpreted or vectorised backends — run a
+> cheap oracle on every decision, with probe arrays two orders of magnitude
+> smaller than the deployed size, one timing repeat, and no detector; it
+> repays in ~5 requests. Where candidates must be compiled to be timed, it
+> does not: the oracle needs ~5,700 requests to repay, and the structural
+> model is the only affordable selector — which is the one 004 found was the
+> better selector anyway.
+
+The prize itself is backend-independent, which is what makes this a scoping
+result rather than a dead end: structural selection leaves **16.31%** of
+runtime unclaimed under compiled C against **14.91%** under NumPy. The waste
+is real on both. Only the cost of *finding* it moves, and it moves by three
+orders of magnitude. 006's cheap-probe trick is inert under a compiler —
+break-even varies 1.011x across probe sizes, because one compiled artifact
+serves both the probe and the deployed run.
 
 The mechanism behind it is worth stating because it generalises: **a noisy
 oracle mis-picks among near-ties, and near-ties are by definition the choices

@@ -113,7 +113,7 @@
     {
       "id": "O-006-oracle-price",
       "objective": "What is the cheapest oracle that still picks well enough to pay for itself?",
-      "status": "closed",
+      "status": "closed-superseded",
       "stated_in": "HANDOFF.md#next-experiment",
       "evidence": {
         "experiment": "006",
@@ -121,17 +121,21 @@
         "scorecard": "experiments/exp006_scorecard.json",
         "preregistration": "experiments/EXP006_PREREGISTRATION.md"
       },
-      "note": "Ranking on 256-element probes with one repeat: break-even 4.7 requests per expression, bootstrap [1.9, 24.0], against the 200 bar. A cheap oracle everywhere (4.7) beats perfect targeting of the expensive one (11.7). Only the headline survives the bootstrap; the probe-size ranking does not."
+      "note": "Ranking on 256-element probes with one repeat: break-even 4.7 requests per expression, bootstrap [1.9, 24.0], against the 200 bar. A cheap oracle everywhere (4.7) beats perfect targeting of the expensive one (11.7). Only the headline survives the bootstrap; the probe-size ranking does not. SCOPED BY 007: the 4.7-request figure charges evaluation only and holds only where evaluation is cheap relative to compilation. On a compiling backend the same policy needs 5733 requests. The standing recommendation is now conditional on the backend, not general.",
+      "superseded_by": "O-007-compile-charge"
     },
     {
       "id": "O-007-compile-charge",
       "objective": "Does charging compilation push 006's break-even above the 200-request bar?",
-      "status": "queued",
+      "status": "closed",
       "stated_in": "experiments/EXP007_PREREGISTRATION.md#the-question",
-      "evidence_pending": {
+      "note": "YES. Marginal accounting (k-1 compiles, the generous reading) gives break-even 5733 requests per expression, bootstrap [4247, 7928], against a 200 bar - 29x over. 006's eval-only accounting on this same backend gives 63.7. 6 of 6 predictions hit. The prize is backend-independent (structural selection wastes 16.31% of runtime under C vs 14.91% under NumPy) but the price of finding it is not. 006's cheap-probe trick is inert here: break-even varies 1.011x across probe sizes, because one compiled artifact serves probe and deployment.",
+      "evidence": {
+        "experiment": "007",
+        "commit": "HEAD",
+        "scorecard": "experiments/exp007_scorecard.json",
         "preregistration": "experiments/EXP007_PREREGISTRATION.md"
-      },
-      "note": "The cheapest cut of item B, split out and run first because if 006 dies here the rest of item B is moot. 006 charged evaluation time only; compilation measured at ~685x one evaluation. Decided on the MARGINAL accounting (k-1 compiles), since one compile is unavoidable under any policy."
+      }
     },
     {
       "id": "O-008-fusion",
@@ -139,10 +143,9 @@
       "status": "blocked",
       "stated_in": "HANDOFF.md#next-experiment",
       "blocked_by": [
-        "O-007-compile-charge",
         "O-fusion-premise"
       ],
-      "note": "Was O-007-backend; the compilation claim was split out as O-007-compile-charge and runs first. Two claims that can fail independently (arm ranking under fusion; probe transfer under fusion) and must be pre-registered separately. Candidates must be REGENERATED, not reloaded - see O-fix-srepr-claim."
+      "note": "Was O-007-backend; the compilation claim was split out as O-007-compile-charge and runs first. Two claims that can fail independently (arm ranking under fusion; probe transfer under fusion) and must be pre-registered separately. Candidates must be REGENERATED, not reloaded - see O-fix-srepr-claim. 007 removes O-007-compile-charge as a blocker but adds a finding O-008 must account for: gcc already strength-reduces pow(x,2) to x*x, so the powexp candidate family that drove 004's T8 collapse is inert under a compiler."
     },
     {
       "id": "O-fusion-premise",

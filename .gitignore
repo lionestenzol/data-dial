@@ -11,3 +11,4 @@ research-incoming/
 # but the fetch script that rebuilds it is tracked.
 !bench/fetch_corpus.sh
 experiments/exp006_timings.json
+experiments/exp007_results.json
