@@ -18,9 +18,9 @@
       "status": "blocked",
       "stated_in": "HANDOFF.md#what-the-project-is",
       "blocked_by": [
-        "O-crossover"
+        "O-discovery-cost"
       ],
-      "note": "REFRAMED - see THESIS.md. The bet is not 'choose among equivalent recipes' (that sub-tactic is what 008 tested and lost on cheap artifacts). The bet is: the generator is the primary object and the artifact a cached render, so send whichever is cheaper - bytes for cheap artifacts, generator for expensive ones. 008 is the cheap end of that curve, the v1 sim the expensive end. Not refuted; the thesis experiment is O-crossover and has never been run. closed-negative was too strong - it recorded a sub-tactic failing, not the bet. SECOND supporting data point (009): the dial beats rsync 4x and 009 isolates WHY - regeneration of deterministic artifacts from recipes B can run, not compression or sync. Still bounded to where K(X|K_B) is small and B's state is cheaply knowable."
+      "note": "REFRAMED - see THESIS.md. The bet is not 'choose among equivalent recipes' (that sub-tactic is what 008 tested and lost on cheap artifacts). The bet is: the generator is the primary object and the artifact a cached render, so send whichever is cheaper - bytes for cheap artifacts, generator for expensive ones. 008 is the cheap end of that curve, the v1 sim the expensive end. Not refuted; the thesis experiment is O-crossover and has never been run. closed-negative was too strong - it recorded a sub-tactic failing, not the bet. SECOND supporting data point (009): the dial beats rsync 4x and 009 isolates WHY - regeneration of deterministic artifacts from recipes B can run, not compression or sync. Still bounded to where K(X|K_B) is small and B's state is cheaply knowable. [O-crossover now closed positive; the remaining gate on establishing the bet is whether the gain survives receiver-state discovery cost -> O-discovery-cost.]"
     },
     {
       "id": "O-v1-sim",
