@@ -967,7 +967,7 @@ deterministic artifacts from recipes the receiver can run.
 ### Honest limits
 Single machine; synthetic (but byte-exact, real-generator) photos; the 4x
 aggregate is corpus-specific; discovery cost unmeasured (oracle B-state);
-delta is a faithful reimplementation, not the rsync binary; compute budget is
+delta is a reimplementation, not the rsync binary - and reading rsync at source (research/TOOL_MECHANICS.md) later showed it is non-rolling and omits run-length token encoding, so it is mildly UNFAIR to rsync in the delta regime; the recompute-driven headline is unaffected; compute budget is
 wall-clock on a shared container. The structural claims are robust; the
 magnitudes are this-corpus-this-machine.
 
