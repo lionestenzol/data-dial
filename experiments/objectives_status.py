@@ -81,6 +81,9 @@ def check(led):
                                  f"findings_section")
         elif o.get("evidence"):
             fail(errors, f"{oid}: status {o['status']} but carries evidence")
+        for k, v in (o.get("evidence_pending") or {}).items():
+            if not pathlib.Path(v).exists():
+                fail(errors, f"{oid}: evidence_pending {k} {v} does not exist")
 
         # 3. superseded_by must name a real objective
         if o["status"] == "closed-superseded":
@@ -129,7 +132,9 @@ def check(led):
     # start under working practice 1. That is the true state of O-007 today.
     for o in objs:
         if o["status"] == "queued" and not o.get("is_prereg"):
-            ev = o.get("evidence") or {}
+            # a queued row cannot carry `evidence` (it is not closed), so its
+            # pre-registration lives under `evidence_pending`
+            ev = o.get("evidence_pending") or o.get("evidence") or {}
             pre = ev.get("preregistration")
             if not pre or not pathlib.Path(pre).exists():
                 warnings.append(f"{o['id']}: queued but not yet pre-registered "

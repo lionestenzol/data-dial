@@ -17,7 +17,9 @@
       "objective": "Is sending the recipe for an artifact worth more than hunting for duplicate bytes?",
       "status": "blocked",
       "stated_in": "HANDOFF.md#what-the-project-is",
-      "blocked_by": ["O-memo-baseline"],
+      "blocked_by": [
+        "O-memo-baseline"
+      ],
       "note": "The programme's central bet. No experiment to date tests it; 001-006 all test one component, the cost model. O-memo-baseline is the only queued-or-dormant item that would."
     },
     {
@@ -25,7 +27,11 @@
       "objective": "Does a recipe-passing sync simulator beat full sync and rsync on a week of real use?",
       "status": "closed",
       "stated_in": "RESULTS.md#done-when",
-      "evidence": {"experiment": "v1 sim", "commit": "59faffc", "findings_section": "RESULTS.md#done-when"},
+      "evidence": {
+        "experiment": "v1 sim",
+        "commit": "59faffc",
+        "findings_section": "RESULTS.md#done-when"
+      },
       "note": "78.57 MB vs 284.83 full sync and 282.88 rsync over 8 days; 0 checker failures in 414 messages; 6/6 'Done when' criteria, machine-rendered by dial_sim.py week."
     },
     {
@@ -33,7 +39,11 @@
       "objective": "Can egglog extraction feed redun's cache and a Wasmtime evaluator without a new VM, equivalence engine or scheduler?",
       "status": "closed",
       "stated_in": "research/experiments/PREREGISTERED.md",
-      "evidence": {"experiment": "smoke test", "commit": "8042e75", "findings_section": "research/findings/INDEPENDENT_RERUN.md"},
+      "evidence": {
+        "experiment": "smoke test",
+        "commit": "8042e75",
+        "findings_section": "research/findings/INDEPENDENT_RERUN.md"
+      },
       "note": "Interoperability only. Its own scope limit still binds: no speedup, scalability or novelty claim follows."
     },
     {
@@ -41,7 +51,11 @@
       "objective": "Has cost-driven selection among equivalent representations already been built?",
       "status": "closed",
       "stated_in": "research/findings/SELECTOR_GAP.md",
-      "evidence": {"experiment": "literature screen", "commit": "176ae70", "findings_section": "research/findings/SELECTOR_GAP.md#answer-it-exists-three-times-over"},
+      "evidence": {
+        "experiment": "literature screen",
+        "commit": "176ae70",
+        "findings_section": "research/findings/SELECTOR_GAP.md#answer-it-exists-three-times-over"
+      },
       "note": "Yes, three times (Halide autoscheduler, OpenTuner, egg/egglog). Do not rebuild. Closed by reading, not by running."
     },
     {
@@ -49,7 +63,11 @@
       "objective": "Can the system discover which reusable substructure to keep, and does that help on unseen compositions?",
       "status": "closed",
       "stated_in": "experiments/FINDINGS.md#002--discovered-reusable-substructure",
-      "evidence": {"experiment": "002/002b", "commit": "91052ca", "findings_section": "experiments/FINDINGS.md#002--discovered-reusable-substructure"},
+      "evidence": {
+        "experiment": "002/002b",
+        "commit": "91052ca",
+        "findings_section": "experiments/FINDINGS.md#002--discovered-reusable-substructure"
+      },
       "note": "Negative: structural 2.80x, real work 1.06x. 2 of 6 predictions hit. Mechanism has a hard ceiling equal to the coverage ratio."
     },
     {
@@ -57,7 +75,11 @@
       "objective": "Does a measured cost function beat a structural one, and does measuring repay itself?",
       "status": "closed-superseded",
       "stated_in": "experiments/FINDINGS.md#003--measured-vs-structural-extraction-cost",
-      "evidence": {"experiment": "003", "commit": "511f060", "findings_section": "experiments/FINDINGS.md#003--measured-vs-structural-extraction-cost"},
+      "evidence": {
+        "experiment": "003",
+        "commit": "511f060",
+        "findings_section": "experiments/FINDINGS.md#003--measured-vs-structural-extraction-cost"
+      },
       "superseded_by": "O-004-frequency",
       "note": "Yes in a domain chosen so the proxy had to fail (94x). 6/6 predictions hit. Its design rule 'measure where the static model is uncertain, and only there' was amended by 004 and replaced by 006's 'run a cheap oracle everywhere'."
     },
@@ -66,7 +88,12 @@
       "objective": "How often is structural cost wrong on a corpus nobody picked in advance?",
       "status": "closed",
       "stated_in": "HANDOFF.md#next-experiment-and-it-is-the-honest-one",
-      "evidence": {"experiment": "004", "commit": "6f1d6ec", "scorecard": "experiments/exp004_scorecard.json", "preregistration": "experiments/EXP004_PREREGISTRATION.md"},
+      "evidence": {
+        "experiment": "004",
+        "commit": "6f1d6ec",
+        "scorecard": "experiments/exp004_scorecard.json",
+        "preregistration": "experiments/EXP004_PREREGISTRATION.md"
+      },
       "note": "Optimal at the median, materially wrong on 4.3% of 539 decisions, worst case 48.30x. Also inverted the programme's assumption: plain node counting beat both the static table and measured per-operator cost."
     },
     {
@@ -74,7 +101,12 @@
       "objective": "Can the regret tail be flagged cheaply enough to target measurement at it?",
       "status": "closed-superseded",
       "stated_in": "experiments/EXP005_PREREGISTRATION.md#the-question",
-      "evidence": {"experiment": "005", "commit": "8440822", "scorecard": "experiments/exp005_scorecard.json", "preregistration": "experiments/EXP005_PREREGISTRATION.md"},
+      "evidence": {
+        "experiment": "005",
+        "commit": "8440822",
+        "scorecard": "experiments/exp005_scorecard.json",
+        "preregistration": "experiments/EXP005_PREREGISTRATION.md"
+      },
       "superseded_by": "O-006-oracle-price",
       "note": "No: best cheap rule 854.8 requests against a 200 bar, because cheap predicates track expression size and size drives what measuring costs but not how much error there is (corr 0.146). Its recommendation to DROP measured costing no longer stands, and its invitation to look for better tail predicates is withdrawn - 006 makes targeting unnecessary."
     },
@@ -83,31 +115,88 @@
       "objective": "What is the cheapest oracle that still picks well enough to pay for itself?",
       "status": "closed",
       "stated_in": "HANDOFF.md#next-experiment",
-      "evidence": {"experiment": "006", "commit": "e03c207", "scorecard": "experiments/exp006_scorecard.json", "preregistration": "experiments/EXP006_PREREGISTRATION.md"},
+      "evidence": {
+        "experiment": "006",
+        "commit": "e03c207",
+        "scorecard": "experiments/exp006_scorecard.json",
+        "preregistration": "experiments/EXP006_PREREGISTRATION.md"
+      },
       "note": "Ranking on 256-element probes with one repeat: break-even 4.7 requests per expression, bootstrap [1.9, 24.0], against the 200 bar. A cheap oracle everywhere (4.7) beats perfect targeting of the expensive one (11.7). Only the headline survives the bootstrap; the probe-size ranking does not."
     },
     {
-      "id": "O-007-backend",
-      "objective": "Do 004's arm ranking and 006's probe transfer survive a backend where operator count stops tracking cost?",
+      "id": "O-007-compile-charge",
+      "objective": "Does charging compilation push 006's break-even above the 200-request bar?",
       "status": "queued",
+      "stated_in": "experiments/EXP007_PREREGISTRATION.md#the-question",
+      "evidence_pending": {
+        "preregistration": "experiments/EXP007_PREREGISTRATION.md"
+      },
+      "note": "The cheapest cut of item B, split out and run first because if 006 dies here the rest of item B is moot. 006 charged evaluation time only; compilation measured at ~685x one evaluation. Decided on the MARGINAL accounting (k-1 compiles), since one compile is unavoidable under any policy."
+    },
+    {
+      "id": "O-008-fusion",
+      "objective": "Do 004's arm ranking and 006's probe transfer survive a backend where operator count stops tracking cost?",
+      "status": "blocked",
       "stated_in": "HANDOFF.md#next-experiment",
-      "blocked_by": ["O-007-prereg"],
-      "note": "The only queued experiment, and it threatens 004 and 006 together. Candidate srepr's saved in experiments/exp006_candidate_exprs.json.gz (commit dfe890d) so no regeneration is needed. Must charge compilation: 006 charged evaluation only, and for a JIT that term alone could undo it."
+      "blocked_by": [
+        "O-007-compile-charge",
+        "O-fusion-premise"
+      ],
+      "note": "Was O-007-backend; the compilation claim was split out as O-007-compile-charge and runs first. Two claims that can fail independently (arm ranking under fusion; probe transfer under fusion) and must be pre-registered separately. Candidates must be REGENERATED, not reloaded - see O-fix-srepr-claim."
+    },
+    {
+      "id": "O-fusion-premise",
+      "objective": "Demonstrate a backend where runtime actually stops being near-linear in operator count.",
+      "status": "dormant",
+      "stated_in": "experiments/EXP007_PREREGISTRATION.md#measured-during-harness-development-declared-as-setup-not-predicted",
+      "note": "Item B assumes such a backend is in hand. It is not. Hand-fused C measured 0.97x NumPy at 16384 elements - at that size NumPy's per-operator loops are already L2-resident and bandwidth-bound, so a single fused pass wins nothing. Until a backend demonstrably breaks operator-count-proportional cost, O-008 has no contrast to measure. Candidates: smaller arrays where per-call overhead dominates, -ffast-math, or numba/JAX."
+    },
+    {
+      "id": "O-fix-srepr-claim",
+      "objective": "Candidate expressions cannot be round-tripped through srepr; regenerate instead.",
+      "status": "closed",
+      "stated_in": "HANDOFF.md#where-things-are",
+      "evidence": {
+        "experiment": "007 planning",
+        "commit": "HEAD",
+        "findings_section": "experiments/EXP007_PREREGISTRATION.md#why-candidates-are-regenerated-rather-than-reloaded"
+      },
+      "note": "006 saved every candidate's srepr so item B would not have to regenerate, and HANDOFF plus this ledger both claimed 'no regeneration is needed'. FALSE: srepr emits no evaluate=False, so all 322 powexp/ candidates reload as duplicates of their base sibling (411 of 2286 entries change structure, 174 of 536 decisions contaminated, 24 have a powexp/ form as oracle pick). The tag-to-expression mapping is sound, 2286/2286 verified. Resolution: candidates_for is deterministic and reproduced all 536 decisions exactly in 88s, so regenerate."
+    },
+    {
+      "id": "O-dag-reproducible",
+      "objective": "DAG node counts are not reproducible from an expression; prefer tree counting.",
+      "status": "closed",
+      "stated_in": "experiments/FINDINGS.md#harness-defects-found",
+      "evidence": {
+        "experiment": "007 planning",
+        "commit": "HEAD",
+        "findings_section": "experiments/FINDINGS.md#006--what-is-the-cheapest-sufficient-oracle-reverses-005"
+      },
+      "note": "dag_op_counts dedupes by id(e), relying on SymPy's cache, so the count depends on how the object graph was built rather than on the expression: 728 of 2286 entries disagree on 'nodes' after a reload, 384 of them with a byte-identical expression. Does NOT invalidate 004's within-run comparisons - every arm shared one walk - but a DAG-counted number cannot be reproduced from a saved expression. A further reason tree counting should be primary, which 004 found independently."
     },
     {
       "id": "O-007-prereg",
-      "objective": "Pre-register O-007's two claims separately, since they can fail independently.",
-      "status": "queued",
+      "objective": "Pre-register the compile-charge claim before running it.",
+      "status": "closed",
       "is_prereg": true,
       "stated_in": "HANDOFF.md#next-experiment",
-      "note": "Working practice 1 means O-007 cannot start until this exists as a commit. No EXP007 pre-registration file exists yet. This is the actual next action in the programme."
+      "evidence": {
+        "experiment": "007 pre-registration",
+        "commit": "HEAD",
+        "findings_section": "experiments/EXP007_PREREGISTRATION.md#predictions"
+      },
+      "note": "W1-W6 committed before the first run, with the gross/marginal accounting split declared and the smoke-test measurements separated out as setup facts rather than predictions."
     },
     {
       "id": "O-recursive",
       "objective": "Does the substrate get cheaper to extend as it grows - primitives built from primitives?",
       "status": "blocked",
       "stated_in": "experiments/FINDINGS.md#next-and-materially-different",
-      "blocked_by": ["O-fix-generator", "O-fix-selection-rule"],
+      "blocked_by": [
+        "O-fix-generator",
+        "O-fix-selection-rule"
+      ],
       "note": "Named in 002's follow-up, never run. HANDOFF listed it as merely dormant; it is not. Both prerequisites are defects 002 found and nothing has fixed."
     },
     {
@@ -115,7 +204,10 @@
       "objective": "Does accumulated structure help on a workload distribution it has never seen?",
       "status": "blocked",
       "stated_in": "experiments/FINDINGS.md#next-and-materially-different",
-      "blocked_by": ["O-fix-generator", "O-fix-selection-rule"],
+      "blocked_by": [
+        "O-fix-generator",
+        "O-fix-selection-rule"
+      ],
       "note": "The difference between compressing a known distribution and accumulating reusable capability. Same two prerequisites as O-recursive."
     },
     {
@@ -186,7 +278,7 @@
       "objective": "Count end-to-end costs: lookup, hashing, optimisation, compilation, execution, validation, movement, retained state, invalidation.",
       "status": "spec-gap",
       "stated_in": "research/ARCHITECTURAL_GAPS.md",
-      "note": "PARTLY ANSWERED by 003-006's break-even accounting and not yet rewritten to say so. Still open in two respects: only latency is measured (see O-multi-resource), and compilation is excluded (see O-007-backend)."
+      "note": "PARTLY ANSWERED by 003-006's break-even accounting and not yet rewritten to say so. Still open in two respects: only latency is measured (see O-multi-resource), and compilation is excluded (see O-007-compile-charge)."
     },
     {
       "id": "O-gap-5-admission",
@@ -222,42 +314,54 @@
       "id": "X-correctness",
       "criterion": "Zero mismatches on the declared primary workload.",
       "threshold": "0 mismatches",
-      "depends_on": ["O-memo-baseline"],
+      "depends_on": [
+        "O-memo-baseline"
+      ],
       "source": "research/benchmarks/NEXT_EXPERIMENT.md"
     },
     {
       "id": "X-improvement",
       "criterion": "At least 10% total-time improvement over the best applicable baseline on the declared primary workload.",
       "threshold": ">=10% total time",
-      "depends_on": ["O-memo-baseline"],
+      "depends_on": [
+        "O-memo-baseline"
+      ],
       "source": "research/benchmarks/NEXT_EXPERIMENT.md"
     },
     {
       "id": "X-no-regression",
       "criterion": "No more than 10% median regression on an unrelated workload.",
       "threshold": "<=10% median regression",
-      "depends_on": ["O-memo-baseline"],
+      "depends_on": [
+        "O-memo-baseline"
+      ],
       "source": "research/benchmarks/NEXT_EXPERIMENT.md"
     },
     {
       "id": "X-strongest-baseline",
       "criterion": "The baseline compared against is the strongest existing tool, not a naive one.",
       "threshold": "optimised execution + memoisation, per NEXT_EXPERIMENT arm 2-5",
-      "depends_on": ["O-memo-baseline"],
+      "depends_on": [
+        "O-memo-baseline"
+      ],
       "source": "HANDOFF.md working practice 2"
     },
     {
       "id": "X-portable",
       "criterion": "The cost-model result holds on more than one backend, so it is an architectural claim and not a NumPy fact.",
       "threshold": "004's arm ranking and 006's operating point reproduce on a fusing backend",
-      "depends_on": ["O-007-backend"],
+      "depends_on": [
+        "O-008-fusion"
+      ],
       "source": "HANDOFF.md#next-experiment"
     },
     {
       "id": "X-differentiating-claim",
       "criterion": "A precise differentiating claim is written and compared against redun, gg, egglog, library-learning systems and build-system theory.",
       "threshold": "gap #8 discharged",
-      "depends_on": ["O-gap-8-evidence"],
+      "depends_on": [
+        "O-gap-8-evidence"
+      ],
       "source": "research/ARCHITECTURAL_GAPS.md"
     }
   ],
@@ -265,13 +369,18 @@
     {
       "id": "A-no-backend-holds",
       "criterion": "If no backend shows the claimed advantage over the best existing tool, the cost-model line is a local optimisation and not an architecture.",
-      "depends_on": ["O-007-backend", "O-memo-baseline"],
+      "depends_on": [
+        "O-008-fusion",
+        "O-memo-baseline"
+      ],
       "source": "HANDOFF.md#next-experiment"
     },
     {
       "id": "A-numpy-specific",
       "criterion": "If 006's cheap-oracle operating point is NumPy-specific, the standing recommendation shrinks to 'the cost model must match the backend's cost structure' and stops being a contribution.",
-      "depends_on": ["O-007-backend"],
+      "depends_on": [
+        "O-008-fusion"
+      ],
       "source": "experiments/FINDINGS.md#006--what-is-the-cheapest-sufficient-oracle-reverses-005"
     }
   ]
