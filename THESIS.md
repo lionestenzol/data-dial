@@ -8,6 +8,11 @@ Read this before `HANDOFF.md`. It is what the project is actually about. Every
 experiment so far (002–008) tested a sub-tactic and kept getting mistaken for
 the thesis itself; this page exists so that stops happening.
 
+**Motivating application:** `research/VILLAGE_SCENARIO.md` — a remote
+village on one thin connection, with a shared local hub that caches, diffs, or
+regenerates whichever is cheapest, and carries less over the pipe the longer it
+runs. That is the north star the measured results (009/010/011) serve.
+
 ## The claim
 
 **The generator is the primary object. The artifact is a cached render of it.**

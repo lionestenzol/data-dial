@@ -455,6 +455,13 @@
         "findings_section": "experiments/FINDINGS.md#011--re-run-the-crossover-delta-arm-with-the-real-rsync-binary"
       },
       "note": "Built real rsync 4.0.0dev from source, ran it on exp009's exact delta pairs. Stand-in was 21% unfair to rsync (confirming the source read), headline robust at 3.98x (was 4.03x) because the win is recompute not delta. 004-008 used real egglog (misconfigured, affecting crashes not conclusions); not re-verified but conclusions not expected to move. The rsync-dependent number - the one the thesis rests on - now stands against the real tool."
+    },
+    {
+      "id": "O-village",
+      "objective": "The north-star application: a remote village on one thin connection served by a shared local cache-diff-regenerate hub that carries less over the pipe the longer it runs.",
+      "status": "spec-gap",
+      "stated_in": "research/VILLAGE_SCENARIO.md",
+      "note": "Motivating use case, written down so the next session builds toward a real target. Grounded in measured results: the dial beats rsync ~4x where things are regenerable (009/011), discovery is ~free (010), the gate is provenance (010). The compounding property (shared hub's local store grows -> pipe carries less over time) is the reason to build it. Honest bound: genuinely-new non-derivable info still crosses the pipe once. The one experiment between 'nice idea' and 'worth building' is O-provenance-freq. Building it needs: a local hub, the selector as a real service (not exp009's script), provisioned generators, and recipe acquisition for incoming content. Prior art: content-centric networking / NDN / caches (DR-001); the twist is regenerate-or-cache-or-diff, chosen per object."
     }
   ],
   "exit_criteria": [
