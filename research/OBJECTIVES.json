@@ -353,7 +353,7 @@
       "objective": "P0 benchmark: measure receiver overlap/recomputability on real workloads and the crossover between full-transfer, delta, recompute and cache - and whether a general selector beats static rules.",
       "status": "closed",
       "stated_in": "THESIS.md#the-experiment-that-was-never-run",
-      "note": "CLOSED, positive. 5 of 7 predictions hit; Z3 (the claim and kill condition) HELD. The generalized selector beats rsync 4.0x on this workload, and the ENTIRE margin is the recompute regime - remove it and the selector is within 4% of rsync. Structural, not tuning: rsync cannot exploit 'B can regenerate' (needs a similar file; a fresh JPEG has none). Per regime: cache 32B, recompute 59B for an 86KB photo (1464x), delta 42% on versioned text, transfer elsewhere. GIR section-6 wall held exactly (incompressible: 0% beatable). Caveat that bounds it: the selector had ORACLE knowledge of B's state; discovery cost unmeasured, so 4x is an upper bound under free perfect knowledge. The two misses are corpus-design, not mechanism (Z2 aggregate depends on regenerable fraction; Z7 fixed photo size).",
+      "note": "CLOSED, positive. 5 of 7 predictions hit; Z3 (the claim and kill condition) HELD. The generalized selector beats rsync 4.0x on this workload, and the ENTIRE margin is the recompute regime - remove it and the selector is within 4% of rsync. Structural, not tuning: rsync cannot exploit 'B can regenerate' (needs a similar file; a fresh JPEG has none). Per regime: cache 32B, recompute 59B for an 86KB photo (1464x), delta 42% on versioned text, transfer elsewhere. GIR section-6 wall held exactly (incompressible: 0% beatable). Caveat that bounds it: the selector had ORACLE knowledge of B's state; discovery cost unmeasured, so 4x is an upper bound under free perfect knowledge. The two misses are corpus-design, not mechanism (Z2 aggregate depends on regenerable fraction; Z7 fixed photo size). [011: re-run against the REAL rsync binary (built 4.0.0dev from source). The stand-in was 21% unfair to rsync on its own arm exactly as source-reading predicted, but the headline moved only 4.03x->3.98x because the win is the recompute regime rsync cannot enter. The 4x is NOT a stand-in artifact.]",
       "evidence": {
         "experiment": "009",
         "commit": "HEAD",
@@ -443,6 +443,18 @@
         "findings_section": "research/TOOL_MECHANICS.md"
       },
       "note": "rsync @df0bb4e and egg @73975c9 read at source. exp009's rsync reimpl is size-faithful but non-rolling (slow not wrong) and omits MAX_CHAIN_LEN and run-length token encoding, so mildly unfair to rsync in the delta regime (009 headline unaffected - recompute). exp008's egglog OOM was running saturation without egg's built-in node_limit (run.rs:162-186); the cross-e-graph extraction non-canonicity was correct behaviour of a wrong setup (saturate both exprs in ONE e-graph). Next session: real librsync/rdiff for delta; egg Runner with node_limit + shared e-graph if selection revisited."
+    },
+    {
+      "id": "O-real-tools",
+      "objective": "Re-run the tool-dependent experiments against the real compiled tools, not stand-ins.",
+      "status": "closed",
+      "stated_in": "experiments/FINDINGS.md#011--re-run-the-crossover-delta-arm-with-the-real-rsync-binary",
+      "evidence": {
+        "experiment": "011",
+        "commit": "HEAD",
+        "findings_section": "experiments/FINDINGS.md#011--re-run-the-crossover-delta-arm-with-the-real-rsync-binary"
+      },
+      "note": "Built real rsync 4.0.0dev from source, ran it on exp009's exact delta pairs. Stand-in was 21% unfair to rsync (confirming the source read), headline robust at 3.98x (was 4.03x) because the win is recompute not delta. 004-008 used real egglog (misconfigured, affecting crashes not conclusions); not re-verified but conclusions not expected to move. The rsync-dependent number - the one the thesis rests on - now stands against the real tool."
     }
   ],
   "exit_criteria": [

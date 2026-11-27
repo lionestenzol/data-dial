@@ -1025,3 +1025,61 @@ files have recipes, scanned/authored ones do not), which this does not model.
 The manifest model assumes B can enumerate its state cheaply; for enormous
 inventories the content-hash set grows and would need a sketch (IBLT, already
 carded) — untested at scale here.
+
+## 011 — re-run the crossover delta arm with the REAL rsync binary
+**Why:** 009/010's "4x over rsync" used a 40-line stand-in. Reading rsync at
+source (TOOL_MECHANICS.md) showed the stand-in omits run-length token encoding
+and is therefore mildly unfair to rsync. The user pushed to replace the sketch
+with the real tool. Built rsync **4.0.0dev** (`@df0bb4e`) from source and ran it
+on the exact 24 delta pairs exp009 used, delta algorithm forced (`--no-whole-file
+--no-compress --stats`), reconstruction verified byte-exact.
+
+### The stand-in WAS unfair to rsync — by 21%, exactly as source-reading predicted
+| | total delta bytes over 24 pairs |
+|---|---|
+| my stand-in | 145,735 |
+| **real rsync** | **120,154** |
+| ratio | **mine 1.21x larger** |
+
+Real rsync produces a **21% smaller delta** than my reimplementation, and was
+byte-exact on all 24 pairs. The gap is the run-length encoding of the token
+stream that the source has and the stand-in lacked — found by reading, now
+confirmed by running.
+
+### It barely moved the headline, because the headline was never the delta arm
+Recomputing exp009's 1-second-budget result with real rsync in the delta arm:
+
+| always-delta policy | bytes | selector beats it |
+|---|---|---|
+| my stand-in | 2,350,382 | 4.03x |
+| **real rsync** | 2,319,082 | **3.98x** |
+
+**4.03x → 3.98x.** The 21%-better delta shaved 1.3% off the always-delta total,
+because the delta regime is only 24 of 72 items and ~120 KB of a 2.3 MB total —
+the bulk of "always-delta" is the photos and incompressible files where rsync
+(real or stand-in) falls back to transfer and gains nothing. The selector's win
+came from the **recompute** regime, which rsync cannot enter at any level of
+implementation quality.
+
+### What this settles
+Both things the user suspected are true, and they don't conflict:
+1. **The stand-in was measurably unfair to rsync** (21% on its own arm). Good
+   instinct; worth checking.
+2. **It did not matter to the conclusion.** Against the real, compiled, byte-
+   exact rsync binary the selector still wins **3.98x**, because the result rests
+   on regenerating artifacts rsync has no mechanism to regenerate. The "4x" was
+   not an artifact of a weak baseline.
+
+### On re-running the rest
+The experiments whose numbers could move with a real tool are 009/010 (rsync) —
+done here, robust. 004–008 used the **real** egglog, not a reimplementation;
+the misuse there (no node limit) affected whether it *crashed*, not the cost-
+model conclusions, which are about normal forms and measured-vs-structural cost,
+not egg's performance. Those conclusions are not expected to move with correct
+egg usage, but that has not been re-verified and the claim is only that.
+
+### Limits
+Real rsync, but still: single machine, local transfer (`--stats` "Total bytes
+sent" as the wire cost, which includes small per-file protocol overhead),
+default block sizing, no compression. The 3.98x is this-corpus-this-machine, as
+009's was; what is now robust is that it is not a stand-in artifact.
