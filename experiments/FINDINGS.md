@@ -970,3 +970,58 @@ aggregate is corpus-specific; discovery cost unmeasured (oracle B-state);
 delta is a faithful reimplementation, not the rsync binary; compute budget is
 wall-clock on a shared container. The structural claims are robust; the
 magnitudes are this-corpus-this-machine.
+
+## 010 — does discovery eat the 4x? (no — and the real gate is provenance)
+**Why:** 009's selector beat rsync 4x with oracle knowledge of B's state. The
+binding question (DR-001 P1): can that state be discovered cheaply enough to
+keep the gain? Reuses 009's per-item costs; charges each policy its own
+discovery; separates the discovery *message* from *provenance* (whether A kept
+the recipe).
+
+### The gate held. 5 of 5 predictions hit.
+
+| provenance p | selector/rsync | beats rsync | picks |
+|---|---|---|---|
+| 0.00 | 0.960 | 1.04x | no recompute → ≈ rsync |
+| 0.50 | 0.628 | 1.59x | recompute 9 |
+| 1.00 | **0.248** | **4.03x** | recompute 20 |
+
+- **The discovery message is 272 bytes — 0.012% of the payload.** B advertising
+  its content hashes and installed generators is negligible. (rsync's own
+  signature cost is already inside the delta bytes; the manifest is the
+  selector's only *extra* discovery, and it is nothing.)
+- **The 4x survives discovery intact** at full provenance (V2, the kill
+  condition): 4.03x after the manifest is charged.
+- **The binding constraint is provenance, not message cost** (V4): varying p
+  moves the result by 1,672,831 bytes; the manifest is 272. Provenance has
+  **6,150x more leverage** than the discovery message.
+
+### The reframe this establishes
+"Can we discover B's state cheaply?" — yes, trivially. The real question was
+never a runtime message. It is **did the sender keep the recipe** — provenance
+coverage `p` — and the win scales with it: p=0 reverts to rsync, p=1 gives the
+full 4x, roughly linear between. That is not a networking cost; it is an
+architecture discipline, and it is **the project's founding premise** ("keep the
+generator, don't throw it away") now measured as the actual gate.
+
+So the deployability question resolves cleanly: the selector is deployable, its
+discovery overhead is negligible, and its value is bounded by how disciplined
+the system is about retaining the generative processes of the objects it sends.
+
+### The frontier this opens (the real-world analog of 004's frequency question)
+`p` is a free parameter here. The unmeasured real-world quantity is: **of the
+objects a real system transfers, what fraction were produced by a deterministic
+process whose recipe the sender could retain?** 009 used a corpus 28% generated.
+If real workloads are 2% generated, the dial is a niche win; if 50%, it is
+large. This is exactly the shape of 004's "how often is structural cost wrong" —
+an existence-and-magnitude result here (the mechanism works, 4x at p=1), with
+the frequency on unpicked real workloads still open. Tracked as `O-provenance-freq`.
+
+### Honest limits
+Inherits 009's (single machine, synthetic-but-byte-exact photos, faithful not
+binary rsync). The provenance model is a coin flip at rate p, not a real
+retention policy; a real sender's `p` is correlated with object type (generated
+files have recipes, scanned/authored ones do not), which this does not model.
+The manifest model assumes B can enumerate its state cheaply; for enormous
+inventories the content-hash set grows and would need a sketch (IBLT, already
+carded) — untested at scale here.

@@ -18,9 +18,9 @@
       "status": "blocked",
       "stated_in": "HANDOFF.md#what-the-project-is",
       "blocked_by": [
-        "O-discovery-cost"
+        "O-provenance-freq"
       ],
-      "note": "REFRAMED - see THESIS.md. The bet is not 'choose among equivalent recipes' (that sub-tactic is what 008 tested and lost on cheap artifacts). The bet is: the generator is the primary object and the artifact a cached render, so send whichever is cheaper - bytes for cheap artifacts, generator for expensive ones. 008 is the cheap end of that curve, the v1 sim the expensive end. Not refuted; the thesis experiment is O-crossover and has never been run. closed-negative was too strong - it recorded a sub-tactic failing, not the bet. SECOND supporting data point (009): the dial beats rsync 4x and 009 isolates WHY - regeneration of deterministic artifacts from recipes B can run, not compression or sync. Still bounded to where K(X|K_B) is small and B's state is cheaply knowable. [O-crossover now closed positive; the remaining gate on establishing the bet is whether the gain survives receiver-state discovery cost -> O-discovery-cost.]"
+      "note": "REFRAMED - see THESIS.md. The bet is not 'choose among equivalent recipes' (that sub-tactic is what 008 tested and lost on cheap artifacts). The bet is: the generator is the primary object and the artifact a cached render, so send whichever is cheaper - bytes for cheap artifacts, generator for expensive ones. 008 is the cheap end of that curve, the v1 sim the expensive end. Not refuted; the thesis experiment is O-crossover and has never been run. closed-negative was too strong - it recorded a sub-tactic failing, not the bet. SECOND supporting data point (009): the dial beats rsync 4x and 009 isolates WHY - regeneration of deterministic artifacts from recipes B can run, not compression or sync. Still bounded to where K(X|K_B) is small and B's state is cheaply knowable. [O-crossover now closed positive; the remaining gate on establishing the bet is whether the gain survives receiver-state discovery cost -> O-discovery-cost.] [010: deployability gate passed - discovery is negligible, the real constraint is provenance. The bet now rests on one open empirical question: what fraction of real objects have retainable recipes -> O-provenance-freq.]"
     },
     {
       "id": "O-v1-sim",
@@ -398,7 +398,7 @@
       "status": "dormant",
       "stated_in": "research/DR-001.md#verdict",
       "blocked_by": [],
-      "note": "JUSTIFIED by 009: the general selector beats the best single tool (rsync) 4x, structurally, via a regime rsync cannot reach. DR-001 said benchmark before building; the benchmark says build - CONDITIONAL on the now-binding next question: can B's state be DISCOVERED cheaply enough to realise the gain? 009's 4x assumed free oracle knowledge of B. That discovery cost (DR-001 P1) is the gate before any build."
+      "note": "JUSTIFIED by 009: the general selector beats the best single tool (rsync) 4x, structurally, via a regime rsync cannot reach. DR-001 said benchmark before building; the benchmark says build - CONDITIONAL on the now-binding next question: can B's state be DISCOVERED cheaply enough to realise the gain? 009's 4x assumed free oracle knowledge of B. That discovery cost (DR-001 P1) is the gate before any build. 010 CONFIRMS deployability: discovery overhead negligible (272B), the gate is provenance not message cost. The build is justified; its value scales with recipe-retention discipline."
     },
     {
       "id": "O-disposition",
@@ -415,9 +415,22 @@
     {
       "id": "O-discovery-cost",
       "objective": "Can a receiver's state (what B can regenerate / has a related version of / holds exactly) be discovered cheaply enough to realise the selector's gain?",
-      "status": "dormant",
+      "status": "closed",
       "stated_in": "experiments/FINDINGS.md#the-caveat-that-bounds-the-result",
-      "note": "THE binding next question after 009. 009's 4x assumed oracle knowledge of B's state; a deployable selector must discover it, and if discovery costs more than the savings the gain evaporates (DR-001 P1). This gates O-selection-layer. Mechanisms to measure: content-hash manifests, Bloom/IBLT inventory sketches (already carded), capability probes. Pre-register whether discovery overhead < realised savings on the 009 corpus."
+      "note": "CLOSED, positive. 5 of 5 predictions hit; V2 (the gate) HELD. Discovery does NOT eat the 4x: the discovery message is 272 bytes (0.012% of payload), and the 4x survives intact at full provenance. The binding constraint is PROVENANCE - did A keep the recipe - which has 6150x more leverage than the message cost and is the project's founding premise, not a runtime cost. Win scales ~linearly with provenance coverage p: p=0 reverts to rsync, p=1 gives 4.03x. The selector is deployable; its value is bounded by retention discipline.",
+      "evidence": {
+        "experiment": "010",
+        "commit": "HEAD",
+        "scorecard": "experiments/exp010_scorecard.json",
+        "preregistration": "experiments/EXP010_PREREGISTRATION.md"
+      }
+    },
+    {
+      "id": "O-provenance-freq",
+      "objective": "Of the objects a real system transfers, what fraction were produced by a deterministic process whose recipe the sender could retain?",
+      "status": "dormant",
+      "stated_in": "experiments/FINDINGS.md#the-frontier-this-opens-the-real-world-analog-of-004s-frequency-question",
+      "note": "THE open empirical question the dial now rests on, and the exact analog of 004's 'how often is structural cost wrong'. 009/010 are existence+magnitude (the mechanism works, 4x at provenance p=1); the frequency on workloads nobody picked is open. 009's corpus was 28% generated by construction. If real workloads are ~2% generated the dial is niche; if ~50%, large. Needs a corpus of real transfers nobody selected for recipe-availability - the hard honest version, as 004 was for cost."
     }
   ],
   "exit_criteria": [

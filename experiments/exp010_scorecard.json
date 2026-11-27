@@ -1,0 +1,41 @@
+{
+  "hits": 5,
+  "total": 5,
+  "checks": [
+    {
+      "tag": "V1",
+      "claim": "discovery manifest < 5% of selector realised bytes",
+      "verdict": "hit",
+      "actual": "manifest 272B = 0.047% of selector; 0.012% of rsync",
+      "note": ""
+    },
+    {
+      "tag": "V2",
+      "claim": "at full provenance the selector still beats rsync >=3.5x after discovery",
+      "verdict": "hit",
+      "actual": "beats rsync 4.03x at p=1 (manifest charged)",
+      "note": ""
+    },
+    {
+      "tag": "V3",
+      "claim": "win scales with p; at p=0 within 10% of rsync",
+      "verdict": "hit",
+      "actual": "p=0 selector/rsync=0.960; monotone in p=True; beats_rsync by p: 0.0:1.04x, 0.25:1.33x, 0.5:1.59x, 0.75:2.33x, 1.0:4.03x",
+      "note": ""
+    },
+    {
+      "tag": "V4",
+      "claim": "binding constraint is provenance, not message cost (>=10x more leverage)",
+      "verdict": "hit",
+      "actual": "p-driven swing 1672831B vs manifest 272B = 6150x more leverage",
+      "note": ""
+    },
+    {
+      "tag": "V5",
+      "claim": "at p>=0.5 selector beats both always-transfer and always-rsync",
+      "verdict": "hit",
+      "actual": "beats both at p in {0.5,0.75,1.0}: True",
+      "note": ""
+    }
+  ]
+}
