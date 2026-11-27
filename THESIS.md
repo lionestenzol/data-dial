@@ -33,18 +33,32 @@ media (see the prior-art cards for GenTrans / "To Store or To Regenerate",
 which give up exactness; `research/RESEARCH_INDEX.json`). Exactness is the line
 between this and that whole 2026 literature.
 
-## Both ends are generators
+## Why the generator must be kept, not recovered
 
-The capture end and the transmit end are halves of one loop:
+There are two directions, and they are not symmetric:
 
-- **Transmit** (data-dial): you hold the generator, ship it, rebuild on the far
-  side. recipe → artifact.
-- **Capture** (sitepull, the author's other project): the generator was thrown
-  away, so you stand in front of the deployed artifact and infer it back.
-  artifact → recipe.
+- **Forward — ship the generator** (data-dial): you hold the generator, send it,
+  rebuild byte-exact on the far side. recipe → artifact. Tractable, because you
+  already have the recipe.
+- **Reverse — recover the generator** (artifact → recipe): given only a finished
+  artifact, reconstruct the process that made it. This is generally
+  **intractable** — it is decompilation / program synthesis, unsolved in the
+  general case.
 
-sitepull exists *because* the recipe was discarded. data-dial exists so it
-never is. Same conviction, opposite directions.
+**sitepull** (the author's other project) is what you are reduced to when you
+try the reverse and the recipe is gone — and it is instructive precisely
+because of how little it recovers. It works for websites **only**, and even
+there it does not recover the generator: it crawls the deployed site, copies
+the *rendered* front-end bytes (HTML, JS bundle, CSS, assets), and wraps a
+static server around them. The source, build and backend stay on the origin. It
+mirrors the render; it does not reconstruct the recipe.
+
+So sitepull is not the opposite end of this loop — it is the **send-the-bytes
+arm, productised for the one domain where copying the render is easy.** That is
+the argument for the forward direction: you cannot reliably get the generator
+back from the artifact, so the only place to keep it is on the sending side,
+before it is thrown away. data-dial keeps it; sitepull is the forensics you do
+when nobody did.
 
 ## What this reframes
 
