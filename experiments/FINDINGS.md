@@ -890,3 +890,83 @@ installed. Transferred bytes are reported but near-meaningless here, because an
 integer result is smaller than any descriptor of it; that term only bites on
 workloads where the artifact is large, which is the v1 sync case rather than
 this one.
+
+## 009 — the crossover benchmark: the first positive result for the actual thesis
+**Why:** 002–008 tested tactics inside the thesis. DR-001 identified the real
+gap — a general selector across transfer / delta / recompute / cache — and said
+*benchmark before building it*, because rsync might already capture the value.
+This is that benchmark, and the first experiment to test the thesis itself.
+
+**Corpus:** 72 real local items across four regimes — 20 photogen JPEGs
+(recompute), 24 consecutive git versions of repo text (delta), 14 source files
+(compressible), 8 held files (cache), 6 random/`.gz` (incompressible). Bytes is
+the primary metric; receiver compute is a declared budget swept 0–10 s (GIR §3,
+units kept separate). No rsync binary here, so the Tridgell–Mackerras
+block-delta was implemented directly.
+
+### The result
+**The generalized selector beats rsync by 4.0x on this workload, and the entire
+margin is the recompute regime.** At a 1 s compute budget:
+
+| policy | bytes | vs selector |
+|---|---|---|
+| always-transfer | 2,418,637 | 4.1x |
+| always-delta (rsync) | 2,350,382 | 4.0x |
+| **selector** | **582,958** | — |
+| selector **without** recompute | 2,255,789 | within **4%** of rsync |
+
+Remove the recompute arm and the selector collapses to within 4% of rsync. So
+the 4x margin is **structural, not tuning**: rsync cannot exploit "B can
+regenerate X," because it needs a *similar file* at B, and a freshly generated
+JPEG has none. The dial is real per regime — cache 32 B when B holds X,
+**recompute 59 B for an 86 KB photo (1464x)**, delta 42% on versioned text,
+transfer everywhere else.
+
+**The boundary held exactly.** On incompressible data (random bytes, the `.gz`
+artifacts) no mechanism beat transfer by more than 0.0% — GIR §6 observed, not
+assumed. Recompute was byte-exact on all 20 photos; 0 disqualified.
+
+### Predictions — 5 of 7
+| | prediction | actual | verdict |
+|---|---|---|---|
+| Z1 | all four mechanisms used | cache/delta/recompute/transfer all pick | hit |
+| Z2 | selector ≤10% of transfer (≥10x) | 4.1x | **miss, corpus mix** |
+| Z3 | **≤50% of rsync AND margin is all recompute** | 0.248 of rsync; 0.96 without recompute | **hit** |
+| Z4 | at T=0 within 5% of rsync | 1.029 | hit (artifact) |
+| Z5 | incompressible: nothing beats transfer >5% | 0.0% | hit |
+| Z6 | 0 recompute disqualified | 0/20 | hit |
+| Z7 | per-file compute break-even varies ≥10x | 1.87x | **miss, by design** |
+
+Z2 missed because the aggregate reduction depends on how much of the pile is
+regenerable — 20 of 72 here gives 4x, though per-photo recompute is 1464x. Not
+a weaker mechanism; a smaller regenerable fraction than 10x needs. Z7 missed by
+corpus design: all photos were one fixed size, so regen *time* barely varied
+(the *byte* crossover is enormous). Z4 is a T=0 artifact — at literally zero
+budget even delta/cache are inadmissible (nonzero apply/hash), so the selector
+drops to transfer; the clean null holds at T=1 ms (0.960).
+
+### The caveat that bounds the result
+**The selector here had oracle knowledge of B's state** — which files B can
+regenerate, has a related version of, or holds exactly. A deployable selector
+must *discover* that cheaply, and that discovery cost is not measured here. So
+4x is an **upper bound under free perfect knowledge of B**. DR-001's P1 question
+— "can receiver resource discovery be performed cheaply enough to justify
+mechanism selection?" — is now the binding next question. The structural finding
+(recompute is a regime rsync cannot reach, and a selector captures it) does not
+depend on the oracle; the 4x magnitude does.
+
+### What this does to the programme
+First positive, pre-registered evidence that the generalized dial beats the best
+single existing tool, for a structural reason. DR-001 said benchmark before
+building; the benchmark says the recompute regime is real and rsync-proof.
+`O-selection-layer` is now justified — conditional on the discovery-cost
+question. The thesis (`O-bet`) has its second supporting data point, and unlike
+the v1 sim this one isolates *why*: not compression, not sync — regeneration of
+deterministic artifacts from recipes the receiver can run.
+
+### Honest limits
+Single machine; synthetic (but byte-exact, real-generator) photos; the 4x
+aggregate is corpus-specific; discovery cost unmeasured (oracle B-state);
+delta is a faithful reimplementation, not the rsync binary; compute budget is
+wall-clock on a shared container. The structural claims are robust; the
+magnitudes are this-corpus-this-machine.

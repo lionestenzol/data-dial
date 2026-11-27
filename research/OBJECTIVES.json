@@ -20,7 +20,7 @@
       "blocked_by": [
         "O-crossover"
       ],
-      "note": "REFRAMED - see THESIS.md. The bet is not 'choose among equivalent recipes' (that sub-tactic is what 008 tested and lost on cheap artifacts). The bet is: the generator is the primary object and the artifact a cached render, so send whichever is cheaper - bytes for cheap artifacts, generator for expensive ones. 008 is the cheap end of that curve, the v1 sim the expensive end. Not refuted; the thesis experiment is O-crossover and has never been run. closed-negative was too strong - it recorded a sub-tactic failing, not the bet."
+      "note": "REFRAMED - see THESIS.md. The bet is not 'choose among equivalent recipes' (that sub-tactic is what 008 tested and lost on cheap artifacts). The bet is: the generator is the primary object and the artifact a cached render, so send whichever is cheaper - bytes for cheap artifacts, generator for expensive ones. 008 is the cheap end of that curve, the v1 sim the expensive end. Not refuted; the thesis experiment is O-crossover and has never been run. closed-negative was too strong - it recorded a sub-tactic failing, not the bet. SECOND supporting data point (009): the dial beats rsync 4x and 009 isolates WHY - regeneration of deterministic artifacts from recipes B can run, not compression or sync. Still bounded to where K(X|K_B) is small and B's state is cheaply knowable."
     },
     {
       "id": "O-v1-sim",
@@ -351,9 +351,15 @@
     {
       "id": "O-crossover",
       "objective": "P0 benchmark: measure receiver overlap/recomputability on real workloads and the crossover between full-transfer, delta, recompute and cache - and whether a general selector beats static rules.",
-      "status": "dormant",
+      "status": "closed",
       "stated_in": "THESIS.md#the-experiment-that-was-never-run",
-      "note": "Promoted to THE next action by DR-001's P0 itinerary, which matches this exactly. The identified gap (D) is a general mechanism-selection layer - the dial, generalized past artifact-vs-generator to transfer/delta/recompute/cache/generate/sync. DR-001's disposition: BENCHMARK before building it; prove discovery/selection overhead < savings. Baseline is rsync (which kept tying because it already does the general objective). Measure the WHOLE critical path incl. provisioning/hashing/verification, not signal size. Must position results against H(X|K_B)."
+      "note": "CLOSED, positive. 5 of 7 predictions hit; Z3 (the claim and kill condition) HELD. The generalized selector beats rsync 4.0x on this workload, and the ENTIRE margin is the recompute regime - remove it and the selector is within 4% of rsync. Structural, not tuning: rsync cannot exploit 'B can regenerate' (needs a similar file; a fresh JPEG has none). Per regime: cache 32B, recompute 59B for an 86KB photo (1464x), delta 42% on versioned text, transfer elsewhere. GIR section-6 wall held exactly (incompressible: 0% beatable). Caveat that bounds it: the selector had ORACLE knowledge of B's state; discovery cost unmeasured, so 4x is an upper bound under free perfect knowledge. The two misses are corpus-design, not mechanism (Z2 aggregate depends on regenerable fraction; Z7 fixed photo size).",
+      "evidence": {
+        "experiment": "009",
+        "commit": "HEAD",
+        "scorecard": "experiments/exp009_scorecard.json",
+        "preregistration": "experiments/EXP009_PREREGISTRATION.md"
+      }
     },
     {
       "id": "O-gir-frame",
@@ -389,12 +395,10 @@
     {
       "id": "O-selection-layer",
       "objective": "Build a general cross-type mechanism-selection layer only if the P0 benchmark proves it beats static rules and existing selectors (Nix/Bazel/NFN).",
-      "status": "blocked",
+      "status": "dormant",
       "stated_in": "research/DR-001.md#verdict",
-      "blocked_by": [
-        "O-crossover"
-      ],
-      "note": "The single residual gap DR-001 identifies (Stopping Condition D). data-dial was a crude domain-specific instance (artifact-vs-generator). DR-001 disposition is explicit: do NOT build this before benchmarks show heterogeneity of receiver state + network/compute conditions creates enough value to justify it. Nix/Bazel/REAPI may already cover enough; NFN is the closest research architecture. ACQUISITION > REINVENTION."
+      "blocked_by": [],
+      "note": "JUSTIFIED by 009: the general selector beats the best single tool (rsync) 4x, structurally, via a regime rsync cannot reach. DR-001 said benchmark before building; the benchmark says build - CONDITIONAL on the now-binding next question: can B's state be DISCOVERED cheaply enough to realise the gain? 009's 4x assumed free oracle knowledge of B. That discovery cost (DR-001 P1) is the gate before any build."
     },
     {
       "id": "O-disposition",
@@ -407,6 +411,13 @@
         "findings_section": "research/DR-001.md#disposition-standing-policy-for-the-project"
       },
       "note": "This is GIR section 8 (research policy) made operational, and it is the antidote to this project's documented failure mode. It governs all node work from here."
+    },
+    {
+      "id": "O-discovery-cost",
+      "objective": "Can a receiver's state (what B can regenerate / has a related version of / holds exactly) be discovered cheaply enough to realise the selector's gain?",
+      "status": "dormant",
+      "stated_in": "experiments/FINDINGS.md#the-caveat-that-bounds-the-result",
+      "note": "THE binding next question after 009. 009's 4x assumed oracle knowledge of B's state; a deployable selector must discover it, and if discovery costs more than the savings the gain evaporates (DR-001 P1). This gates O-selection-layer. Mechanisms to measure: content-hash manifests, Bloom/IBLT inventory sketches (already carded), capability probes. Pre-register whether discovery overhead < realised savings on the 009 corpus."
     }
   ],
   "exit_criteria": [
