@@ -149,6 +149,16 @@ model is uncertain, and only there**. That is a design rule the literature's
 framing of this problem does not supply, and it came out of charging for the
 measurement instead of assuming it free.
 
+> **AMENDED by 004, then REPLACED by 006 (`O-003-measured`).** 004 added the
+> condition this rule was missing — *and only if the thing you measure is the
+> thing that drives cost* — after measured per-operator cost turned out worse
+> than counting nodes on a real corpus. 006 then replaced the rule outright:
+> the standing recommendation is **run a cheap oracle everywhere**, which is
+> explicitly *not* "only where uncertain". What survives from 003 is that an
+> *asymptotic* difference (O(n²) vs O(n log n)) is invisible to any weight
+> table; that is why 003's domain worked, and it is a narrower claim than the
+> rule as stated above.
+
 ### Honest limits
 This domain was *chosen* because the proxy must fail in it. The 94x figure is
 an existence proof that structural cost can be catastrophically wrong — it
@@ -275,6 +285,13 @@ such rather than deleted. The hypothesis that cost is driven by intermediate
 arrays remains untested.
 
 ### The oracle is not a policy
+> **CORRECTED by 006.** The 162x below is real but it is a property of *this*
+> oracle, not of oracles — 006's first line is "that price is a design choice,
+> not a fact". Timing every candidate once, on 256-element probes rather than
+> best-of-11 at full size, costs ~1/550th as much and still recovers ~90% of
+> the waste. "Perfect selection by measurement is unaffordable per request" is
+> false as written; it is unaffordable *at best-of-11 on deployed-size arrays*.
+
 Timing every admitted candidate costs **30.454 ms per decision** against
 0.1878 ms to simply run the best form — **162x**. Perfect selection by
 measurement is unaffordable per request, which is what makes the cheapness of
@@ -396,6 +413,16 @@ held-out matched train. At ≥1.5 both tuned predicates did drop ~50%, so the
 overfitting effect exists, just not at the primary target.
 
 ### What this does to the architecture
+> **SUPERSEDED by 006 (`O-005-targeting` → `O-006-oracle-price`).** The
+> recommendation below no longer stands. 006 showed the question was wrong:
+> this section tried to *target* an oracle price that should simply have been
+> *lowered*. A single-repeat oracle on 256-element probes breaks even in 4.7
+> requests per expression applied to every decision, so no detector is needed.
+> Point 3 below invites a search for better tail predicates — **do not do
+> that**; it is withdrawn. What survives here is the measured reason cheap
+> predicates fail (expression size drives measurement cost but not error,
+> `corr = 0.146`), which is why 006 did not try to fix the detector.
+
 **Measured costing should be dropped from the resolution policy**, with the
 door left open on one specific condition. Stated precisely:
 

@@ -3,6 +3,24 @@
 Read this first. It is the state of the work, what is proven, what is not,
 and the one experiment that comes next.
 
+**For status, run the ledger, not this file:**
+
+```
+.venv-research/bin/python -I experiments/objectives_status.py          # table + "Done when"
+.venv-research/bin/python -I experiments/objectives_status.py --drift  # + supersession watch
+```
+
+`research/OBJECTIVES.json` is the single source of truth for *where each
+objective stands*; this document is for *what the results mean*. The split
+exists because status kept drifting when it lived in prose: 005's
+recommendation was reversed by 006 while 005's own findings section still read
+as current advice, an earlier version of this file introduced an experiment as
+pending after it had been done, and three documents each claimed to name "the
+next experiment". The script fails if an objective marked closed cites
+evidence that does not exist, so a stale status is now an error rather than
+something a reader has to notice. **When an experiment closes an objective,
+update the ledger in the same commit.**
+
 ## What the project is
 
 An architecture where you send the **recipe** for something instead of the
@@ -25,7 +43,9 @@ Two background documents, both written in this project:
 | `research/` | prior-art registry: 33 cards, capability matrix, gap list, verification ledger |
 | `research/findings/SELECTOR_GAP.md` | the key literature finding |
 | `research/findings/INDEPENDENT_RERUN.md` | the bundle's smoke test, re-run here |
-| `experiments/FINDINGS.md` | experiment log, 002 / 002b / 003 / 004 / 005 |
+| `research/OBJECTIVES.json` | **the objective ledger — what each objective is and where it stands** |
+| `experiments/objectives_status.py` | renders and validates the ledger; run it first |
+| `experiments/FINDINGS.md` | experiment log, 002 / 002b / 003 / 004 / 005 / 006 |
 | `experiments/EXP004_PREREGISTRATION.md` | 004's ten predictions, committed before the run |
 | `experiments/EXP005_PREREGISTRATION.md` | 005's seven predictions, and its ship criterion |
 | `experiments/EXP006_PREREGISTRATION.md` | 006's seven predictions, with its hinge declared |
