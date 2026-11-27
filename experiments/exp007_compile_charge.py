@@ -63,8 +63,21 @@ def emit_c(expr, args):
             f"}}\n")
 
 
+# Every compiled object needs its OWN path, for a reason that cost a debugging
+# session: the first two full runs died with SIGBUS at exactly core 50. The
+# build tag was derived from len(rows), which only advances when a decision is
+# KEPT, so the first skipped core made the next one reuse the same filenames.
+# gcc -o then rewrote a .so that a previously loaded ctypes.CDLL still had
+# mmap'd, and touching those pages is a bus error. Unlinking a mapped file is
+# safe on Linux; overwriting one in place is not.
+_UID = 0
+
+
 def compile_c(src, tag, extra=()):
     """Returns (so_path, compile_ms). The subprocess wall time IS the charge."""
+    global _UID
+    _UID += 1
+    tag = f"{tag}_{_UID}"
     os.makedirs(BUILD, exist_ok=True)
     c = os.path.join(BUILD, f"{tag}.c")
     so = os.path.join(BUILD, f"{tag}.so")
@@ -170,10 +183,11 @@ def run(limit=None):
                 rec["arms"][arm] = {"compile_ms": cms, "ms": ms,
                                     "probe_ms": probes, "worst_rel_err": worst}
                 ok_any = True
-                try:
-                    os.remove(so)
-                except OSError:
-                    pass
+                for junk in (so, so[:-3] + ".c"):
+                    try:
+                        os.remove(junk)
+                    except OSError:
+                        pass
             if not ok_any:
                 continue
             tc = E4.tree_op_counts(e)
