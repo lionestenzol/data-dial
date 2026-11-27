@@ -3,19 +3,26 @@
 For each item B is missing, in order:
 
   1. B has the key            -> send the key
-  2. B has all the chunks     -> send the recipe
+  2. B has all the chunks     -> send the reassembly recipe
+  2.5 A kept a generator and  -> send the generator recipe; B regenerates
+      B can run it               the exact bytes (the regenerate arm)
   3. it's a photo preview     -> send thumb-v1
   4. otherwise                -> send the missing raw chunks, 1 MiB per message
 
-Originals use only steps 1, 2 or 4: a thumbnail never stands in for an
-original.  Cost order is exact first (a hard rule), then fewest bytes.
+Originals use only steps 1, 2, 2.5 or 4: a thumbnail never stands in for an
+original.  Cost order is exact first (a hard rule), then fewest bytes.  Step
+2.5 is exact (B's output is SHA-256-checked, with a raw fallback) and far
+smaller than the raw chunks of step 4, so it sits ahead of step 4 - it is the
+one move rsync cannot make, because it reruns the process instead of shipping
+the output.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Iterable, List, Set
+from typing import Callable, Iterable, List, Optional, Set
 
-from .keys import EXACT, PREVIEW, THUMB, Key
+from .generators import GenRecipe
+from .keys import EXACT, PREVIEW, THUMB, Key, canon
 from .store import ChunkStore
 from .wire import PACK_LIMIT, Message, compress
 
@@ -28,6 +35,7 @@ class Want:
     full_size: int        # the original's size, for the full-sync baseline
     photo: bool
     file_key: Key = None  # the original's key - the raw fallback target
+    gen: Optional[GenRecipe] = None  # set when A kept a recipe and B can run it
 
     def __post_init__(self):
         if self.file_key is None:
@@ -59,6 +67,14 @@ def plan_one(want: Want, store: ChunkStore,
         return [Message(d, "recipe", want.path, 2,
                         body=Key(**{**key.as_dict(False), "child_keys": tuple(children)}
                                  ).wire(True), kid=key.kid)]
+
+    # Step 2.5 - A kept a generator recipe for this exact artifact and B can run
+    # that generator: ship the recipe, B regenerates the bytes and checks them
+    # against the file hash.  Exact, and ~80 bytes against step 4's whole file.
+    if want.gen is not None:
+        body = canon({"key": key.as_dict(False), "recipe": want.gen.as_wire_dict()})
+        return [Message(d, "generate", want.path, 2, body=body, kid=key.kid,
+                        note=f"generate {want.gen.generator}")]
 
     # Step 3 - a photo preview: send thumb-v1.  Never for an exact want.
     if not want.exact:

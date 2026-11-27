@@ -1,0 +1,74 @@
+[
+  {
+    "rule": "disagree_ast_static",
+    "flagged_frac": 0.10760667903525047,
+    "waste_kept_frac": 0.10040280724625257,
+    "oracle_ms": 7456.043760000057,
+    "breakeven": 5505.390359840322,
+    "ship": false
+  },
+  {
+    "rule": "disagree_ast_meas",
+    "flagged_frac": 0.13543599257884972,
+    "waste_kept_frac": 0.6231413890295019,
+    "oracle_ms": 9736.444938015893,
+    "breakeven": 1158.3487642842042,
+    "ship": false
+  },
+  {
+    "rule": "disagree_any",
+    "flagged_frac": 0.14471243042671614,
+    "waste_kept_frac": 0.6246865186568694,
+    "oracle_ms": 9773.895736017039,
+    "breakeven": 1159.928164776617,
+    "ship": false
+  },
+  {
+    "rule": "dag_vs_tree",
+    "flagged_frac": 0.11317254174397032,
+    "waste_kept_frac": 0.7426173763616464,
+    "oracle_ms": 8563.032709043455,
+    "breakeven": 854.8462709740398,
+    "ship": false
+  },
+  {
+    "rule": "sq_powexp",
+    "flagged_frac": 0.28385899814471244,
+    "waste_kept_frac": 0.5629423473471189,
+    "oracle_ms": 11282.886944995425,
+    "breakeven": 1485.8735174917572,
+    "ship": false
+  },
+  {
+    "rule": "pow_gen",
+    "flagged_frac": 0.08163265306122448,
+    "waste_kept_frac": 0.09039289974258075,
+    "oracle_ms": 8221.185269017042,
+    "breakeven": 6742.57277249871,
+    "ship": false
+  },
+  {
+    "rule": "PERFECT >=1.2",
+    "flagged_frac": 0.09647495361781076,
+    "waste_kept_frac": 0.8778918359949704,
+    "oracle_ms": 1391.7838219956593,
+    "breakeven": 117.53204676934699,
+    "ship": true
+  },
+  {
+    "rule": "PERFECT >=1.5",
+    "flagged_frac": 0.03710575139146568,
+    "waste_kept_frac": 0.8308396663561209,
+    "oracle_ms": 1209.6712650013615,
+    "breakeven": 107.93832324853518,
+    "ship": true
+  },
+  {
+    "rule": "flag everything",
+    "flagged_frac": 1.0,
+    "waste_kept_frac": 1.0,
+    "oracle_ms": 16414.55355095172,
+    "breakeven": 1216.8991863191777,
+    "ship": false
+  }
+]

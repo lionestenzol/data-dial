@@ -1,0 +1,401 @@
+{
+  "n_decisions": 536,
+  "total_waste_ms": 14.371180999887656,
+  "by_R": {
+    "1": {
+      "all": {
+        "spent_ms": 1614.4521770004303,
+        "recovered_ms": 13.014202000476871,
+        "breakeven": 124.05310574872536,
+        "mispicks": 123,
+        "n_flagged": 536
+      },
+      "cheap": {
+        "spent_ms": 817.5955109993538,
+        "recovered_ms": 9.967561000223668,
+        "breakeven": 82.02563405240332,
+        "mispicks": 17,
+        "n_flagged": 61
+      },
+      "perfect": {
+        "spent_ms": 145.75327899996182,
+        "recovered_ms": 12.567701999813607,
+        "breakeven": 11.597448682513598,
+        "mispicks": 15,
+        "n_flagged": 51
+      }
+    },
+    "2": {
+      "all": {
+        "spent_ms": 3204.6302470019154,
+        "recovered_ms": 13.541731000202617,
+        "breakeven": 236.6484939742169,
+        "mispicks": 77,
+        "n_flagged": 536
+      },
+      "cheap": {
+        "spent_ms": 1618.4949850001829,
+        "recovered_ms": 9.974367999774358,
+        "breakeven": 162.2654172211008,
+        "mispicks": 16,
+        "n_flagged": 61
+      },
+      "perfect": {
+        "spent_ms": 284.5882660002701,
+        "recovered_ms": 12.628552999757403,
+        "breakeven": 22.535302817807953,
+        "mispicks": 5,
+        "n_flagged": 51
+      }
+    },
+    "3": {
+      "all": {
+        "spent_ms": 4784.123126000935,
+        "recovered_ms": 13.735103000897197,
+        "breakeven": 348.3135966063326,
+        "mispicks": 62,
+        "n_flagged": 536
+      },
+      "cheap": {
+        "spent_ms": 2414.0528599997706,
+        "recovered_ms": 10.053282000257013,
+        "breakeven": 240.12584745340428,
+        "mispicks": 13,
+        "n_flagged": 61
+      },
+      "perfect": {
+        "spent_ms": 423.3495990002609,
+        "recovered_ms": 12.64489999999796,
+        "breakeven": 33.47986927538606,
+        "mispicks": 3,
+        "n_flagged": 51
+      }
+    },
+    "4": {
+      "all": {
+        "spent_ms": 6355.120992001076,
+        "recovered_ms": 13.80480100016257,
+        "breakeven": 460.3558567723096,
+        "mispicks": 59,
+        "n_flagged": 536
+      },
+      "cheap": {
+        "spent_ms": 3204.318254999407,
+        "recovered_ms": 10.069795999982034,
+        "breakeven": 318.21084111387404,
+        "mispicks": 9,
+        "n_flagged": 61
+      },
+      "perfect": {
+        "spent_ms": 565.8528420006803,
+        "recovered_ms": 12.654942999859031,
+        "breakeven": 44.71397792996646,
+        "mispicks": 2,
+        "n_flagged": 51
+      }
+    },
+    "6": {
+      "all": {
+        "spent_ms": 9533.989555000288,
+        "recovered_ms": 14.095561000374346,
+        "breakeven": 676.382412501857,
+        "mispicks": 44,
+        "n_flagged": 536
+      },
+      "cheap": {
+        "spent_ms": 4818.186724997901,
+        "recovered_ms": 10.06614299998887,
+        "breakeven": 478.65271981564626,
+        "mispicks": 10,
+        "n_flagged": 61
+      },
+      "perfect": {
+        "spent_ms": 850.3013780004096,
+        "recovered_ms": 12.657249999847409,
+        "breakeven": 67.17899844047172,
+        "mispicks": 1,
+        "n_flagged": 51
+      }
+    },
+    "8": {
+      "all": {
+        "spent_ms": 12746.748848000865,
+        "recovered_ms": 14.155281000341802,
+        "breakeven": 900.494228810652,
+        "mispicks": 38,
+        "n_flagged": 536
+      },
+      "cheap": {
+        "spent_ms": 6467.785150997914,
+        "recovered_ms": 10.068663999987848,
+        "breakeven": 642.3677611057157,
+        "mispicks": 9,
+        "n_flagged": 61
+      },
+      "perfect": {
+        "spent_ms": 1137.3405850011693,
+        "recovered_ms": 12.657249999847409,
+        "breakeven": 89.85684765765713,
+        "mispicks": 1,
+        "n_flagged": 51
+      }
+    },
+    "12": {
+      "all": {
+        "spent_ms": 19105.92677000122,
+        "recovered_ms": 14.15229700000964,
+        "breakeven": 1350.023022410299,
+        "mispicks": 30,
+        "n_flagged": 536
+      },
+      "cheap": {
+        "spent_ms": 9730.315080997541,
+        "recovered_ms": 10.078234999980396,
+        "breakeven": 965.4780902624784,
+        "mispicks": 5,
+        "n_flagged": 61
+      },
+      "perfect": {
+        "spent_ms": 1709.3326440020178,
+        "recovered_ms": 12.657249999847409,
+        "breakeven": 135.04771131348633,
+        "mispicks": 1,
+        "n_flagged": 51
+      }
+    },
+    "24": {
+      "all": {
+        "spent_ms": 38209.452168997756,
+        "recovered_ms": 14.211322999841514,
+        "breakeven": 2688.6625664214284,
+        "mispicks": 24,
+        "n_flagged": 536
+      },
+      "cheap": {
+        "spent_ms": 19460.33730599458,
+        "recovered_ms": 10.11885599976381,
+        "breakeven": 1923.175634325542,
+        "mispicks": 5,
+        "n_flagged": 61
+      },
+      "perfect": {
+        "spent_ms": 3417.7877020046876,
+        "recovered_ms": 12.657249999847409,
+        "breakeven": 270.02608797692164,
+        "mispicks": 1,
+        "n_flagged": 51
+      }
+    }
+  },
+  "by_probe": {
+    "256": {
+      "1": {
+        "spent_ms": 55.44972999805964,
+        "recovered_ms": 12.30336800006171,
+        "breakeven": 4.506874052518101,
+        "mispicks": 146,
+        "n_flagged": 536
+      },
+      "2": {
+        "spent_ms": 107.63255999768262,
+        "recovered_ms": 12.32758399956424,
+        "breakeven": 8.73103440231981,
+        "mispicks": 126,
+        "n_flagged": 536
+      },
+      "3": {
+        "spent_ms": 159.82549799630874,
+        "recovered_ms": 12.669836999805284,
+        "breakeven": 12.61464516068873,
+        "mispicks": 135,
+        "n_flagged": 536
+      },
+      "6": {
+        "spent_ms": 312.7010409986042,
+        "recovered_ms": 13.06650800009379,
+        "breakeven": 23.93149271376558,
+        "mispicks": 126,
+        "n_flagged": 536
+      },
+      "12": {
+        "spent_ms": 616.3801129911519,
+        "recovered_ms": 13.003133000040634,
+        "breakeven": 47.40243085948792,
+        "mispicks": 127,
+        "n_flagged": 536
+      }
+    },
+    "1024": {
+      "1": {
+        "spent_ms": 125.00628499984145,
+        "recovered_ms": 12.38860200018621,
+        "breakeven": 10.090427071429247,
+        "mispicks": 125,
+        "n_flagged": 536
+      },
+      "2": {
+        "spent_ms": 248.6610510006244,
+        "recovered_ms": 13.238116999957583,
+        "breakeven": 18.78371757867234,
+        "mispicks": 120,
+        "n_flagged": 536
+      },
+      "3": {
+        "spent_ms": 370.2455229995678,
+        "recovered_ms": 13.619388999700277,
+        "breakeven": 27.18517864551162,
+        "mispicks": 107,
+        "n_flagged": 536
+      },
+      "6": {
+        "spent_ms": 733.5401619959896,
+        "recovered_ms": 13.666771999737648,
+        "breakeven": 53.67325671417295,
+        "mispicks": 111,
+        "n_flagged": 536
+      },
+      "12": {
+        "spent_ms": 1442.2000529911259,
+        "recovered_ms": 13.713361999577955,
+        "breakeven": 105.16750400343193,
+        "mispicks": 108,
+        "n_flagged": 536
+      }
+    },
+    "4096": {
+      "1": {
+        "spent_ms": 419.47735800025043,
+        "recovered_ms": 11.599692000629602,
+        "breakeven": 36.16280138968192,
+        "mispicks": 121,
+        "n_flagged": 536
+      },
+      "2": {
+        "spent_ms": 838.9091299992231,
+        "recovered_ms": 11.99749800022687,
+        "breakeven": 69.92367325115282,
+        "mispicks": 92,
+        "n_flagged": 536
+      },
+      "3": {
+        "spent_ms": 1250.148284998346,
+        "recovered_ms": 12.323075999688626,
+        "breakeven": 101.4477460846573,
+        "mispicks": 86,
+        "n_flagged": 536
+      },
+      "6": {
+        "spent_ms": 2493.5260019966563,
+        "recovered_ms": 12.322913999582852,
+        "breakeven": 202.34873034747022,
+        "mispicks": 77,
+        "n_flagged": 536
+      },
+      "12": {
+        "spent_ms": 4938.436080997861,
+        "recovered_ms": 13.553171999859615,
+        "breakeven": 364.3749286918969,
+        "mispicks": 72,
+        "n_flagged": 536
+      }
+    }
+  },
+  "passing": [
+    {
+      "config": "probe=256, R=1, flag everything",
+      "breakeven": 4.506874052518101,
+      "oracle_ms": 55.44972999805964,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "probe=256, R=2, flag everything",
+      "breakeven": 8.73103440231981,
+      "oracle_ms": 107.63255999768262,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "probe=1024, R=1, flag everything",
+      "breakeven": 10.090427071429247,
+      "oracle_ms": 125.00628499984145,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "probe=256, R=3, flag everything",
+      "breakeven": 12.61464516068873,
+      "oracle_ms": 159.82549799630874,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "probe=1024, R=2, flag everything",
+      "breakeven": 18.78371757867234,
+      "oracle_ms": 248.6610510006244,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "probe=256, R=6, flag everything",
+      "breakeven": 23.93149271376558,
+      "oracle_ms": 312.7010409986042,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "probe=1024, R=3, flag everything",
+      "breakeven": 27.18517864551162,
+      "oracle_ms": 370.2455229995678,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "probe=4096, R=1, flag everything",
+      "breakeven": 36.16280138968192,
+      "oracle_ms": 419.47735800025043,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "probe=256, R=12, flag everything",
+      "breakeven": 47.40243085948792,
+      "oracle_ms": 616.3801129911519,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "probe=1024, R=6, flag everything",
+      "breakeven": 53.67325671417295,
+      "oracle_ms": 733.5401619959896,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "R=1, dag_vs_tree",
+      "breakeven": 82.02563405240332,
+      "oracle_ms": 817.5955109993538,
+      "flagged_frac": 0.11380597014925373
+    },
+    {
+      "config": "probe=4096, R=2, flag everything",
+      "breakeven": 69.92367325115282,
+      "oracle_ms": 838.9091299992231,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "probe=4096, R=3, flag everything",
+      "breakeven": 101.4477460846573,
+      "oracle_ms": 1250.148284998346,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "probe=1024, R=12, flag everything",
+      "breakeven": 105.16750400343193,
+      "oracle_ms": 1442.2000529911259,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "R=1, flag everything",
+      "breakeven": 124.05310574872536,
+      "oracle_ms": 1614.4521770004303,
+      "flagged_frac": 1.0
+    },
+    {
+      "config": "R=2, dag_vs_tree",
+      "breakeven": 162.2654172211008,
+      "oracle_ms": 1618.4949850001829,
+      "flagged_frac": 0.11380597014925373
+    }
+  ]
+}

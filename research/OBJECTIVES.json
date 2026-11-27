@@ -1,0 +1,550 @@
+{
+  "purpose": "Single source of truth for what this programme is trying to settle and where each objective stands. Render and validate with: .venv-research/bin/python -I experiments/objectives_status.py",
+  "why_this_exists": "Objective status previously lived only as prose, in whichever document happened to raise it. That drifted: experiment 005's recommendation was reversed by 006 while 005's own findings section still read as current advice, and three documents each claimed to name 'the next experiment'. Prose is kept for interpretation; status lives here, and a script checks it against the evidence.",
+  "not_tracked_here": "Prediction-level outcomes (T1-T10, U1-U7, V1-V7) stay in experiments/expNNN_scorecard.json and are cited, not duplicated. The 66 per-card 'smallest experiment' micro-objectives in research/PRIOR_ART.md are also not tracked individually; O-prior-art covers them as one row.",
+  "status_vocabulary": {
+    "closed": "Answered. Evidence cited and resolvable.",
+    "closed-superseded": "Answered, then its conclusion was replaced by a later result. The later objective is named in superseded_by.",
+    "queued": "Specified and next. Under working practice 1 it cannot start until a pre-registration commit exists.",
+    "blocked": "Specified, but a named prerequisite must be fixed first. See blocked_by.",
+    "dormant": "Stated, never run, nothing blocking it but nobody is on it.",
+    "spec-gap": "Specification or design work, not a measurement.",
+    "abandoned": "Deliberately dropped. Reason recorded in note."
+  },
+  "objectives": [
+    {
+      "id": "O-bet",
+      "objective": "Is sending the recipe for an artifact worth more than hunting for duplicate bytes?",
+      "status": "blocked",
+      "stated_in": "HANDOFF.md#what-the-project-is",
+      "blocked_by": [
+        "O-provenance-freq"
+      ],
+      "note": "REFRAMED - see THESIS.md. The bet is not 'choose among equivalent recipes' (that sub-tactic is what 008 tested and lost on cheap artifacts). The bet is: the generator is the primary object and the artifact a cached render, so send whichever is cheaper - bytes for cheap artifacts, generator for expensive ones. 008 is the cheap end of that curve, the v1 sim the expensive end. Not refuted; the thesis experiment is O-crossover and has never been run. closed-negative was too strong - it recorded a sub-tactic failing, not the bet. SECOND supporting data point (009): the dial beats rsync 4x and 009 isolates WHY - regeneration of deterministic artifacts from recipes B can run, not compression or sync. Still bounded to where K(X|K_B) is small and B's state is cheaply knowable. [O-crossover now closed positive; the remaining gate on establishing the bet is whether the gain survives receiver-state discovery cost -> O-discovery-cost.] [010: deployability gate passed - discovery is negligible, the real constraint is provenance. The bet now rests on one open empirical question: what fraction of real objects have retainable recipes -> O-provenance-freq.]"
+    },
+    {
+      "id": "O-v1-sim",
+      "objective": "Does a recipe-passing sync simulator beat full sync and rsync on a week of real use?",
+      "status": "closed",
+      "stated_in": "RESULTS.md#done-when",
+      "evidence": {
+        "experiment": "v1 sim",
+        "commit": "59faffc",
+        "findings_section": "RESULTS.md#done-when"
+      },
+      "note": "78.57 MB vs 284.83 full sync and 282.88 rsync over 8 days; 0 checker failures in 414 messages; 6/6 'Done when' criteria, machine-rendered by dial_sim.py week."
+    },
+    {
+      "id": "O-interop",
+      "objective": "Can egglog extraction feed redun's cache and a Wasmtime evaluator without a new VM, equivalence engine or scheduler?",
+      "status": "closed",
+      "stated_in": "research/experiments/PREREGISTERED.md",
+      "evidence": {
+        "experiment": "smoke test",
+        "commit": "8042e75",
+        "findings_section": "research/findings/INDEPENDENT_RERUN.md"
+      },
+      "note": "Interoperability only. Its own scope limit still binds: no speedup, scalability or novelty claim follows."
+    },
+    {
+      "id": "O-selector-exists",
+      "objective": "Has cost-driven selection among equivalent representations already been built?",
+      "status": "closed",
+      "stated_in": "research/findings/SELECTOR_GAP.md",
+      "evidence": {
+        "experiment": "literature screen",
+        "commit": "176ae70",
+        "findings_section": "research/findings/SELECTOR_GAP.md#answer-it-exists-three-times-over"
+      },
+      "note": "Yes, three times (Halide autoscheduler, OpenTuner, egg/egglog). Do not rebuild. Closed by reading, not by running. PARTLY RETRACTED by O-premise-sourced: the claim that all three systems DOCUMENT this defect is unsourced. That cost-driven selection exists three times over stands; that its authors admitted the gap does not."
+    },
+    {
+      "id": "O-002-discovery",
+      "objective": "Can the system discover which reusable substructure to keep, and does that help on unseen compositions?",
+      "status": "closed",
+      "stated_in": "experiments/FINDINGS.md#002--discovered-reusable-substructure",
+      "evidence": {
+        "experiment": "002/002b",
+        "commit": "91052ca",
+        "findings_section": "experiments/FINDINGS.md#002--discovered-reusable-substructure"
+      },
+      "note": "Negative: structural 2.80x, real work 1.06x. 2 of 6 predictions hit. Mechanism has a hard ceiling equal to the coverage ratio."
+    },
+    {
+      "id": "O-003-measured",
+      "objective": "Does a measured cost function beat a structural one, and does measuring repay itself?",
+      "status": "closed-superseded",
+      "stated_in": "experiments/FINDINGS.md#003--measured-vs-structural-extraction-cost",
+      "evidence": {
+        "experiment": "003",
+        "commit": "511f060",
+        "findings_section": "experiments/FINDINGS.md#003--measured-vs-structural-extraction-cost"
+      },
+      "superseded_by": "O-004-frequency",
+      "note": "Yes in a domain chosen so the proxy had to fail (94x). 6/6 predictions hit. Its design rule 'measure where the static model is uncertain, and only there' was amended by 004 and replaced by 006's 'run a cheap oracle everywhere'."
+    },
+    {
+      "id": "O-004-frequency",
+      "objective": "How often is structural cost wrong on a corpus nobody picked in advance?",
+      "status": "closed",
+      "stated_in": "HANDOFF.md#next-experiment-and-it-is-the-honest-one",
+      "evidence": {
+        "experiment": "004",
+        "commit": "6f1d6ec",
+        "scorecard": "experiments/exp004_scorecard.json",
+        "preregistration": "experiments/EXP004_PREREGISTRATION.md"
+      },
+      "note": "Optimal at the median, materially wrong on 4.3% of 539 decisions, worst case 48.30x. Also inverted the programme's assumption: plain node counting beat both the static table and measured per-operator cost."
+    },
+    {
+      "id": "O-005-targeting",
+      "objective": "Can the regret tail be flagged cheaply enough to target measurement at it?",
+      "status": "closed-superseded",
+      "stated_in": "experiments/EXP005_PREREGISTRATION.md#the-question",
+      "evidence": {
+        "experiment": "005",
+        "commit": "8440822",
+        "scorecard": "experiments/exp005_scorecard.json",
+        "preregistration": "experiments/EXP005_PREREGISTRATION.md"
+      },
+      "superseded_by": "O-006-oracle-price",
+      "note": "No: best cheap rule 854.8 requests against a 200 bar, because cheap predicates track expression size and size drives what measuring costs but not how much error there is (corr 0.146). Its recommendation to DROP measured costing no longer stands, and its invitation to look for better tail predicates is withdrawn - 006 makes targeting unnecessary."
+    },
+    {
+      "id": "O-006-oracle-price",
+      "objective": "What is the cheapest oracle that still picks well enough to pay for itself?",
+      "status": "closed-superseded",
+      "stated_in": "HANDOFF.md#next-experiment",
+      "evidence": {
+        "experiment": "006",
+        "commit": "e03c207",
+        "scorecard": "experiments/exp006_scorecard.json",
+        "preregistration": "experiments/EXP006_PREREGISTRATION.md"
+      },
+      "note": "Ranking on 256-element probes with one repeat: break-even 4.7 requests per expression, bootstrap [1.9, 24.0], against the 200 bar. A cheap oracle everywhere (4.7) beats perfect targeting of the expensive one (11.7). Only the headline survives the bootstrap; the probe-size ranking does not. SCOPED BY 007: the 4.7-request figure charges evaluation only and holds only where evaluation is cheap relative to compilation. On a compiling backend the same policy needs 5733 requests. The standing recommendation is now conditional on the backend, not general.",
+      "superseded_by": "O-007-compile-charge"
+    },
+    {
+      "id": "O-007-compile-charge",
+      "objective": "Does charging compilation push 006's break-even above the 200-request bar?",
+      "status": "closed",
+      "stated_in": "experiments/EXP007_PREREGISTRATION.md#the-question",
+      "note": "YES. Marginal accounting (k-1 compiles, the generous reading) gives break-even 5733 requests per expression, bootstrap [4247, 7928], against a 200 bar - 29x over. 006's eval-only accounting on this same backend gives 63.7. 6 of 6 predictions hit. The prize is backend-independent (structural selection wastes 16.31% of runtime under C vs 14.91% under NumPy) but the price of finding it is not. 006's cheap-probe trick is inert here: break-even varies 1.011x across probe sizes, because one compiled artifact serves probe and deployment.",
+      "evidence": {
+        "experiment": "007",
+        "commit": "HEAD",
+        "scorecard": "experiments/exp007_scorecard.json",
+        "preregistration": "experiments/EXP007_PREREGISTRATION.md"
+      }
+    },
+    {
+      "id": "O-008-fusion",
+      "objective": "Do 004's arm ranking and 006's probe transfer survive a backend where operator count stops tracking cost?",
+      "status": "blocked",
+      "stated_in": "HANDOFF.md#next-experiment",
+      "blocked_by": [
+        "O-fusion-premise"
+      ],
+      "note": "Was O-007-backend; the compilation claim was split out as O-007-compile-charge and runs first. Two claims that can fail independently (arm ranking under fusion; probe transfer under fusion) and must be pre-registered separately. Candidates must be REGENERATED, not reloaded - see O-fix-srepr-claim. 007 removes O-007-compile-charge as a blocker but adds a finding O-008 must account for: gcc already strength-reduces pow(x,2) to x*x, so the powexp candidate family that drove 004's T8 collapse is inert under a compiler."
+    },
+    {
+      "id": "O-fusion-premise",
+      "objective": "Demonstrate a backend where runtime actually stops being near-linear in operator count.",
+      "status": "dormant",
+      "stated_in": "experiments/EXP007_PREREGISTRATION.md#measured-during-harness-development-declared-as-setup-not-predicted",
+      "note": "Item B assumes such a backend is in hand. It is not. Hand-fused C measured 0.97x NumPy at 16384 elements - at that size NumPy's per-operator loops are already L2-resident and bandwidth-bound, so a single fused pass wins nothing. Until a backend demonstrably breaks operator-count-proportional cost, O-008 has no contrast to measure. Candidates: smaller arrays where per-call overhead dominates, -ffast-math, or numba/JAX."
+    },
+    {
+      "id": "O-fix-srepr-claim",
+      "objective": "Candidate expressions cannot be round-tripped through srepr; regenerate instead.",
+      "status": "closed",
+      "stated_in": "HANDOFF.md#where-things-are",
+      "evidence": {
+        "experiment": "007 planning",
+        "commit": "HEAD",
+        "findings_section": "experiments/EXP007_PREREGISTRATION.md#why-candidates-are-regenerated-rather-than-reloaded"
+      },
+      "note": "006 saved every candidate's srepr so item B would not have to regenerate, and HANDOFF plus this ledger both claimed 'no regeneration is needed'. FALSE: srepr emits no evaluate=False, so all 322 powexp/ candidates reload as duplicates of their base sibling (411 of 2286 entries change structure, 174 of 536 decisions contaminated, 24 have a powexp/ form as oracle pick). The tag-to-expression mapping is sound, 2286/2286 verified. Resolution: candidates_for is deterministic and reproduced all 536 decisions exactly in 88s, so regenerate."
+    },
+    {
+      "id": "O-dag-reproducible",
+      "objective": "DAG node counts are not reproducible from an expression; prefer tree counting.",
+      "status": "closed",
+      "stated_in": "experiments/FINDINGS.md#harness-defects-found",
+      "evidence": {
+        "experiment": "007 planning",
+        "commit": "HEAD",
+        "findings_section": "experiments/FINDINGS.md#006--what-is-the-cheapest-sufficient-oracle-reverses-005"
+      },
+      "note": "dag_op_counts dedupes by id(e), relying on SymPy's cache, so the count depends on how the object graph was built rather than on the expression: 728 of 2286 entries disagree on 'nodes' after a reload, 384 of them with a byte-identical expression. Does NOT invalidate 004's within-run comparisons - every arm shared one walk - but a DAG-counted number cannot be reproduced from a saved expression. A further reason tree counting should be primary, which 004 found independently."
+    },
+    {
+      "id": "O-007-prereg",
+      "objective": "Pre-register the compile-charge claim before running it.",
+      "status": "closed",
+      "is_prereg": true,
+      "stated_in": "HANDOFF.md#next-experiment",
+      "evidence": {
+        "experiment": "007 pre-registration",
+        "commit": "HEAD",
+        "findings_section": "experiments/EXP007_PREREGISTRATION.md#predictions"
+      },
+      "note": "W1-W6 committed before the first run, with the gross/marginal accounting split declared and the smoke-test measurements separated out as setup facts rather than predictions."
+    },
+    {
+      "id": "O-recursive",
+      "objective": "Does the substrate get cheaper to extend as it grows - primitives built from primitives?",
+      "status": "blocked",
+      "stated_in": "experiments/FINDINGS.md#next-and-materially-different",
+      "blocked_by": [
+        "O-fix-generator",
+        "O-fix-selection-rule"
+      ],
+      "note": "Named in 002's follow-up, never run. HANDOFF listed it as merely dormant; it is not. Both prerequisites are defects 002 found and nothing has fixed."
+    },
+    {
+      "id": "O-transfer",
+      "objective": "Does accumulated structure help on a workload distribution it has never seen?",
+      "status": "blocked",
+      "stated_in": "experiments/FINDINGS.md#next-and-materially-different",
+      "blocked_by": [
+        "O-fix-generator",
+        "O-fix-selection-rule"
+      ],
+      "note": "The difference between compressing a known distribution and accumulating reusable capability. Same two prerequisites as O-recursive."
+    },
+    {
+      "id": "O-fix-generator",
+      "objective": "Replace the workload generator, which spins when asked for more unique sequences than its motif set can compose.",
+      "status": "dormant",
+      "stated_in": "experiments/FINDINGS.md#harness-defects-found",
+      "note": "Found by 002 at 5,000 sequences, recorded in commit 91052ca, never fixed. FINDINGS says a bounded generator is needed 'before any long-workload run', which is what O-recursive and O-transfer both are."
+    },
+    {
+      "id": "O-fix-selection-rule",
+      "objective": "Drive motif selection by projected lifetime uses rather than training-set frequency.",
+      "status": "dormant",
+      "stated_in": "experiments/FINDINGS.md#what-was-learned",
+      "note": "002 calls the rule defective: it over-kept at N=8 and kept nothing at N=128, degenerating to sequential. Recorded in commit 91052ca, never fixed."
+    },
+    {
+      "id": "O-memo-baseline",
+      "objective": "Does representation-aware reuse lower total cost against optimised execution plus memoisation - the strongest existing baseline?",
+      "status": "closed-negative",
+      "stated_in": "research/benchmarks/NEXT_EXPERIMENT.md",
+      "note": "TESTED AND FAILED on the declared workload. 8 of 9 predictions hit. Against the design's own thresholds: zero mismatches PASS (0/314, all arms); >=10% total-time improvement FAIL at -4080% (best baseline 1.09ms vs best normalising arm 45.37ms); <=10% unrelated regression FAIL at +443% (sympy) and +29449% (egglog); memory cap PASS. A FREE trick - constant folding plus sorting commutative operands - captured 81% of the available equivalence wins, CORRECTED (user-raised): the claim that normalisation buys a more expensive program is true only of sympy.expand, which is a CANONICAL not a CHEAP form. egglog extracts the smallest term and SHRINKS expressions (3536 ops, 0.71x direct, node growth -110). The verdict stands for a better reason: memo_canon, the free trick, executes 2866 ops - FEWER than any other arm including the cost-aware one - so the algebra engine has no form advantage to sell here, and charges 73x the normalisation time for a 1.23x worse form. No break-even at any operation cost for either normalising arm. The persistent e-graph, which is the architecture's own accumulate-structure design, aborts on memory. NEXT_EXPERIMENT.md's rule applies: narrow or stop the claimed advantage.",
+      "evidence": {
+        "experiment": "008",
+        "commit": "HEAD",
+        "scorecard": "experiments/exp008_scorecard.json",
+        "preregistration": "experiments/EXP008_PREREGISTRATION.md"
+      }
+    },
+    {
+      "id": "O-multi-resource",
+      "objective": "Cost over a measured multi-resource vector - bytes moved, receiver CPU, energy, latency, resident storage - not latency alone.",
+      "status": "dormant",
+      "stated_in": "research/findings/SELECTOR_GAP.md#what-this-does-to-the-gap",
+      "note": "The programme's defining gap statement asks for this and commit 176ae70 named it as the next experiment. 003-006 all measured LATENCY ONLY, and 006 additionally excluded compilation. No document recorded the narrowing; it simply stopped being mentioned. Tracked here so the substitution is visible."
+    },
+    {
+      "id": "O-memory-pass",
+      "objective": "Is vectorised-array cost driven by the number of intermediate arrays rather than per-operator latency?",
+      "status": "dormant",
+      "stated_in": "experiments/FINDINGS.md#the-result-i-did-not-predict",
+      "note": "Proposed in 004 to explain why node counting won, and the test written for it was TAUTOLOGICAL (ast_size weights are 1.0 per operator, so ast_size IS the interior-node count). Left labelled in exp004_analysis.py. The hypothesis remains untested and appeared in no next-step list before this ledger."
+    },
+    {
+      "id": "O-prior-art",
+      "objective": "Run the 'smallest experiment' named on each of the 33 prior-art cards.",
+      "status": "dormant",
+      "stated_in": "research/PRIOR_ART.md",
+      "note": "66 micro-objectives (remaining_gap + smallest_experiment per card). Only three cards' tools were ever executed: egglog, redun, Stitch. The other 30 are untried and nothing recorded that. checked_date is frozen at 2026-11-26 on all 33."
+    },
+    {
+      "id": "O-gap-1-semantic",
+      "objective": "Specify the semantic contract: value types, arithmetic, effects, errors, recursion, termination.",
+      "status": "spec-gap",
+      "stated_in": "research/ARCHITECTURAL_GAPS.md",
+      "note": "Partly exercised by 004-006's accuracy-admission filter (1e-6 relative error against a 30-digit reference, admitting before selecting), but never written down as a contract."
+    },
+    {
+      "id": "O-gap-2-identity",
+      "objective": "Distinguish representation hash, equivalence class, derivation identity and output hash.",
+      "status": "spec-gap",
+      "stated_in": "research/ARCHITECTURAL_GAPS.md",
+      "note": "Untouched by 001-006."
+    },
+    {
+      "id": "O-gap-3-resolution",
+      "objective": "Define the resolution policy: when to reuse, repair, execute, retrieve, query or specialise.",
+      "status": "spec-gap",
+      "stated_in": "research/ARCHITECTURAL_GAPS.md",
+      "note": "PARTLY ANSWERED by 004-006 and not yet rewritten to say so: measured costing is a tail-risk fix (004), targeting it does not pay (005), and the standing policy is a cheap oracle everywhere with no detector (006)."
+    },
+    {
+      "id": "O-gap-4-economics",
+      "objective": "Count end-to-end costs: lookup, hashing, optimisation, compilation, execution, validation, movement, retained state, invalidation.",
+      "status": "spec-gap",
+      "stated_in": "research/ARCHITECTURAL_GAPS.md",
+      "note": "PARTLY ANSWERED by 003-006's break-even accounting and not yet rewritten to say so. Still open in two respects: only latency is measured (see O-multi-resource), and compilation is excluded (see O-007-compile-charge)."
+    },
+    {
+      "id": "O-gap-5-admission",
+      "objective": "Define semantic checks, applicability conditions, held-out transfer, admission thresholds, versioning and garbage collection for proposed abstractions.",
+      "status": "spec-gap",
+      "stated_in": "research/ARCHITECTURAL_GAPS.md",
+      "note": "SELECTOR_GAP.md claims this and gap #3 are 'one gap: structural proxies standing in for measured cost'. 004 complicates that claim by finding the structural proxy the better selector, and the merge was never reflected in the gap list."
+    },
+    {
+      "id": "O-gap-6-updates",
+      "objective": "Handle mutable input revisions and invalid rule assumptions with safe invalidation.",
+      "status": "spec-gap",
+      "stated_in": "research/ARCHITECTURAL_GAPS.md",
+      "note": "Untouched by 001-006."
+    },
+    {
+      "id": "O-gap-7-reconstruction",
+      "objective": "State the reconstruction contract: which bytes are preinstalled, fetched, transmitted or generated.",
+      "status": "spec-gap",
+      "stated_in": "research/ARCHITECTURAL_GAPS.md",
+      "note": "Partly exercised by the v1 simulator (O-v1-sim) but never written as a contract."
+    },
+    {
+      "id": "O-gap-8-evidence",
+      "objective": "Write precise differentiating claims and compare them against redun, gg, egglog, library-learning systems and build-system theory.",
+      "status": "spec-gap",
+      "stated_in": "research/ARCHITECTURAL_GAPS.md",
+      "note": "The gap that defines done-ness: 'a literature screen and tiny integration do not establish a new computational model, commercial freedom to operate or general speedup'. O-memo-baseline is the measurement it needs. Freedom-to-operate is explicitly NOT established (research/RIV_Research_Report.md section 8)."
+    },
+    {
+      "id": "O-premise-sourced",
+      "objective": "Is the premise that egg and Stitch documented the structural-proxy gap actually sourced?",
+      "status": "closed",
+      "stated_in": "research/findings/SELECTOR_GAP.md#the-one-line-in-the-cards-that-matters-most",
+      "evidence": {
+        "experiment": "primary-source audit",
+        "commit": "HEAD",
+        "findings_section": "research/findings/SELECTOR_GAP.md#the-one-line-in-the-cards-that-matters-most"
+      },
+      "note": "NO - RETRACTED. Both quotes were our own prior-art card limitations fields, promoted into warnings issued by upstream. Verified at source: egg @73975c9 has ONE mention of cost beside any performance word (the verb 'perform', src/extract.rs:51); its CostFunction rustdoc caveats only usize overflow and monotonicity. Stitch @350804b discusses only its OWN search runtime. The underlying claim is probably true and 004 measured it, but it was our hunch, not a citable upstream opening. egg's and Stitch's PAPERS remain unread - arxiv.org is blocked here."
+    },
+    {
+      "id": "O-fp-prior-art",
+      "objective": "Screen the floating-point accuracy/performance literature the 33-card registry omits entirely.",
+      "status": "closed",
+      "stated_in": "research/PRIOR_ART.md",
+      "note": "PARTLY ANSWERED, and the answer splits. OpTuner (Briggs & Panchekha, PLDI 2022) is real and was missing from the screen, but it selects LIBRARY IMPLEMENTATIONS per call site, not algebraically equivalent expression forms - verified from its own implementations/all_costs.json at 6cb05d0, a flat cost-per-implementation table. So 003-008's question is NOT occupied. Two corroborations fell out: its cost model is a STATIC pre-measured table, i.e. a published tool in this space also declined to measure per-expression (supporting 004), and its analysis costs ~60s per benchmark (supporting 006/007 on analysis dominating). THE BIGGER MISS is semantic caching, an established database literature that experiment 008's whole design belongs to: a 2026 OLAP system reports hit rates 28.2% text / 55.6% AST / 82% semantic and describes its canonicalisation as sorting commutative filters and normalising literals - the same technique our arm 3 independently invented, with the same reported limitation. Cards written for both. NEITHER PAPER WAS READ: arxiv.org does not resolve in this environment, so both cards are search-summary evidence except OpTuner's source, which was read. Route that worked: raw.githubusercontent.com and git clone are reachable even though every paper host is not.",
+      "evidence": {
+        "experiment": "prior-art screen round 2",
+        "commit": "HEAD",
+        "findings_section": "research/RESEARCH_INDEX.json"
+      }
+    },
+    {
+      "id": "O-measurement-validity",
+      "objective": "Re-judge 004-007's conclusions with instruments that have no timing noise.",
+      "status": "dormant",
+      "stated_in": "experiments/FINDINGS.md#honest-limits",
+      "note": "004's headline rests on a p95 regret gap of 1.451 vs 1.517 - 4.5% - from best-of-N perf_counter in ONE process, with every noise floor measured back-to-back in that same process. Verified about this machine: no virtualised PMU (/sys/bus/event_source/devices has no cpu node; perf_event_open(PERF_TYPE_HARDWARE) returns ENOENT), so hardware counters are permanently unavailable and installing perf would not help; and no cpufreq and no intel_pstate, so frequency and throttling are not merely uncontrolled but UNOBSERVABLE. Two zero-noise instruments ARE installed: llvm-mca 18.1.3 (host sapphirerapids) and cachegrind 3.22 (deterministic I refs). Plan: score the same candidates under wall clock, cachegrind I refs and llvm-mca, and report whether the winning arm changes with the oracle. Read Block RThroughput for vector-over-inputs and Total Cycles for serial scalar - mixing them yields a confidently wrong cost model."
+    },
+    {
+      "id": "O-crossover",
+      "objective": "P0 benchmark: measure receiver overlap/recomputability on real workloads and the crossover between full-transfer, delta, recompute and cache - and whether a general selector beats static rules.",
+      "status": "closed",
+      "stated_in": "THESIS.md#the-experiment-that-was-never-run",
+      "note": "CLOSED, positive. 5 of 7 predictions hit; Z3 (the claim and kill condition) HELD. The generalized selector beats rsync 4.0x on this workload, and the ENTIRE margin is the recompute regime - remove it and the selector is within 4% of rsync. Structural, not tuning: rsync cannot exploit 'B can regenerate' (needs a similar file; a fresh JPEG has none). Per regime: cache 32B, recompute 59B for an 86KB photo (1464x), delta 42% on versioned text, transfer elsewhere. GIR section-6 wall held exactly (incompressible: 0% beatable). Caveat that bounds it: the selector had ORACLE knowledge of B's state; discovery cost unmeasured, so 4x is an upper bound under free perfect knowledge. The two misses are corpus-design, not mechanism (Z2 aggregate depends on regenerable fraction; Z7 fixed photo size). [011: re-run against the REAL rsync binary (built 4.0.0dev from source). The stand-in was 21% unfair to rsync on its own arm exactly as source-reading predicted, but the headline moved only 4.03x->3.98x because the win is the recompute regime rsync cannot enter. The 4x is NOT a stand-in artifact.]",
+      "evidence": {
+        "experiment": "009",
+        "commit": "HEAD",
+        "scorecard": "experiments/exp009_scorecard.json",
+        "preregistration": "experiments/EXP009_PREREGISTRATION.md"
+      }
+    },
+    {
+      "id": "O-gir-frame",
+      "objective": "Adopt the GIR generalized objective: realize X'=X at B by any mechanism; transport is one option.",
+      "status": "closed",
+      "stated_in": "GIR_SPEC.md",
+      "evidence": {
+        "experiment": "spec adoption",
+        "commit": "HEAD",
+        "findings_section": "GIR_SPEC.md"
+      },
+      "note": "Supersedes THESIS.md as top-level frame; THESIS (send-the-generator) is one cell (GENERATE/ACTIVATE under E_bitwise). The single cross-node judge is K(X|K_B)+resolution cost vs transmitting X; section 6 is the boundary that makes the frame actionable rather than 'all of CS'. Full spec in research/GIR_SPEC_FULL.md."
+    },
+    {
+      "id": "O-dsc-position",
+      "objective": "Position GIR against distributed source coding (Slepian-Wolf/Wyner-Ziv) - the proven bound for its objective.",
+      "status": "dormant",
+      "stated_in": "GIR_SPEC.md#the-prior-art-9-demands-be-found-before-any-synthesis",
+      "note": "Section 9 requires finding existing generalized architectures before synthesis. DSC proves X compresses to H(X|K_B) with side info at the decoder - the formal home of the whole objective, and it was missing from the 35-card screen. rsync is a practical instance, which is why it kept tying the dial. Any novelty claim must be stated as a delta from this bound (the per-object dial + exact cross-generator reconstruction), not as beating transmission. Blocked in practice by arxiv being unreachable; the bound itself is textbook and carded. CORROBORATED by DR-001, which independently names Slepian-Wolf/Wyner-Ziv as the formal core and rsync as the practical instance."
+    },
+    {
+      "id": "O-node-investigation",
+      "objective": "Classify established mechanisms for all ten GIR nodes; mark proven/available/gap/impossible per section 9.",
+      "status": "closed",
+      "stated_in": "research/GIR_SPEC_FULL.md#9-required_investigation",
+      "note": "CLOSED by DR-001 (external pass, citations not verified in-session but all canonically-checkable claims hold). All ten nodes classified to established mechanisms with a disposition each. Verdict: no new mathematics required; Stopping Condition C/D. New prior art folded into the registry: IBLT/set-reconciliation, CRDTs, NFN, rsync/RDC/casync delta family. The single residual gap is a general cross-type mechanism-selection layer.",
+      "evidence": {
+        "experiment": "DR-001 external research pass",
+        "commit": "HEAD",
+        "findings_section": "research/DR-001.md"
+      }
+    },
+    {
+      "id": "O-selection-layer",
+      "objective": "Build a general cross-type mechanism-selection layer only if the P0 benchmark proves it beats static rules and existing selectors (Nix/Bazel/NFN).",
+      "status": "dormant",
+      "stated_in": "research/DR-001.md#verdict",
+      "blocked_by": [],
+      "note": "JUSTIFIED by 009: the general selector beats the best single tool (rsync) 4x, structurally, via a regime rsync cannot reach. DR-001 said benchmark before building; the benchmark says build - CONDITIONAL on the now-binding next question: can B's state be DISCOVERED cheaply enough to realise the gain? 009's 4x assumed free oracle knowledge of B. That discovery cost (DR-001 P1) is the gate before any build. 010 CONFIRMS deployability: discovery overhead negligible (272B), the gate is provenance not message cost. The build is justified; its value scales with recipe-retention discipline."
+    },
+    {
+      "id": "O-disposition",
+      "objective": "Adopt DR-001's standing disposition: reuse first, integrate only where needed, benchmark before building a selector, keep transfer as fallback, document the arbitrary-unseen boundary as fundamental.",
+      "status": "closed",
+      "stated_in": "research/DR-001.md#disposition-standing-policy-for-the-project",
+      "evidence": {
+        "experiment": "policy adoption",
+        "commit": "HEAD",
+        "findings_section": "research/DR-001.md#disposition-standing-policy-for-the-project"
+      },
+      "note": "This is GIR section 8 (research policy) made operational, and it is the antidote to this project's documented failure mode. It governs all node work from here."
+    },
+    {
+      "id": "O-discovery-cost",
+      "objective": "Can a receiver's state (what B can regenerate / has a related version of / holds exactly) be discovered cheaply enough to realise the selector's gain?",
+      "status": "closed",
+      "stated_in": "experiments/FINDINGS.md#the-caveat-that-bounds-the-result",
+      "note": "CLOSED, positive. 5 of 5 predictions hit; V2 (the gate) HELD. Discovery does NOT eat the 4x: the discovery message is 272 bytes (0.012% of payload), and the 4x survives intact at full provenance. The binding constraint is PROVENANCE - did A keep the recipe - which has 6150x more leverage than the message cost and is the project's founding premise, not a runtime cost. Win scales ~linearly with provenance coverage p: p=0 reverts to rsync, p=1 gives 4.03x. The selector is deployable; its value is bounded by retention discipline.",
+      "evidence": {
+        "experiment": "010",
+        "commit": "HEAD",
+        "scorecard": "experiments/exp010_scorecard.json",
+        "preregistration": "experiments/EXP010_PREREGISTRATION.md"
+      }
+    },
+    {
+      "id": "O-provenance-freq",
+      "objective": "Of the objects a real system transfers, what fraction were produced by a deterministic process whose recipe the sender could retain?",
+      "status": "dormant",
+      "stated_in": "experiments/FINDINGS.md#the-frontier-this-opens-the-real-world-analog-of-004s-frequency-question",
+      "note": "THE open empirical question the dial now rests on, and the exact analog of 004's 'how often is structural cost wrong'. 009/010 are existence+magnitude (the mechanism works, 4x at provenance p=1); the frequency on workloads nobody picked is open. 009's corpus was 28% generated by construction. If real workloads are ~2% generated the dial is niche; if ~50%, large. Needs a corpus of real transfers nobody selected for recipe-availability - the hard honest version, as 004 was for cost."
+    },
+    {
+      "id": "O-tool-mechanics",
+      "objective": "Understand rsync and egg from source, not as black boxes.",
+      "status": "closed",
+      "stated_in": "research/TOOL_MECHANICS.md",
+      "evidence": {
+        "experiment": "source read",
+        "commit": "HEAD",
+        "findings_section": "research/TOOL_MECHANICS.md"
+      },
+      "note": "rsync @df0bb4e and egg @73975c9 read at source. exp009's rsync reimpl is size-faithful but non-rolling (slow not wrong) and omits MAX_CHAIN_LEN and run-length token encoding, so mildly unfair to rsync in the delta regime (009 headline unaffected - recompute). exp008's egglog OOM was running saturation without egg's built-in node_limit (run.rs:162-186); the cross-e-graph extraction non-canonicity was correct behaviour of a wrong setup (saturate both exprs in ONE e-graph). Next session: real librsync/rdiff for delta; egg Runner with node_limit + shared e-graph if selection revisited."
+    },
+    {
+      "id": "O-real-tools",
+      "objective": "Re-run the tool-dependent experiments against the real compiled tools, not stand-ins.",
+      "status": "closed",
+      "stated_in": "experiments/FINDINGS.md#011--re-run-the-crossover-delta-arm-with-the-real-rsync-binary",
+      "evidence": {
+        "experiment": "011",
+        "commit": "HEAD",
+        "findings_section": "experiments/FINDINGS.md#011--re-run-the-crossover-delta-arm-with-the-real-rsync-binary"
+      },
+      "note": "Built real rsync 4.0.0dev from source, ran it on exp009's exact delta pairs. Stand-in was 21% unfair to rsync (confirming the source read), headline robust at 3.98x (was 4.03x) because the win is recompute not delta. 004-008 used real egglog (misconfigured, affecting crashes not conclusions); not re-verified but conclusions not expected to move. The rsync-dependent number - the one the thesis rests on - now stands against the real tool."
+    },
+    {
+      "id": "O-village",
+      "objective": "The north-star application: a remote village on one thin connection served by a shared local cache-diff-regenerate hub that carries less over the pipe the longer it runs.",
+      "status": "spec-gap",
+      "stated_in": "research/VILLAGE_SCENARIO.md",
+      "note": "Motivating use case, written down so the next session builds toward a real target. Grounded in measured results: the dial beats rsync ~4x where things are regenerable (009/011), discovery is ~free (010), the gate is provenance (010). The compounding property (shared hub's local store grows -> pipe carries less over time) is the reason to build it. Honest bound: genuinely-new non-derivable info still crosses the pipe once. The one experiment between 'nice idea' and 'worth building' is O-provenance-freq. Building it needs: a local hub, the selector as a real service (not exp009's script), provisioned generators, and recipe acquisition for incoming content. Prior art: content-centric networking / NDN / caches (DR-001); the twist is regenerate-or-cache-or-diff, chosen per object."
+    }
+  ],
+  "exit_criteria": [
+    {
+      "id": "X-correctness",
+      "criterion": "Zero mismatches on the declared primary workload.",
+      "threshold": "0 mismatches",
+      "depends_on": [
+        "O-memo-baseline"
+      ],
+      "source": "research/benchmarks/NEXT_EXPERIMENT.md",
+      "met": true,
+      "met_by": "experiment 008: 0 mismatches of 314 requests, all five arms"
+    },
+    {
+      "id": "X-improvement",
+      "criterion": "At least 10% total-time improvement over the best applicable baseline on the declared primary workload.",
+      "threshold": ">=10% total time",
+      "depends_on": [
+        "O-memo-baseline"
+      ],
+      "source": "research/benchmarks/NEXT_EXPERIMENT.md",
+      "met": false,
+      "met_by": "experiment 008: -4080% on primary, needed >= +10%"
+    },
+    {
+      "id": "X-no-regression",
+      "criterion": "No more than 10% median regression on an unrelated workload.",
+      "threshold": "<=10% median regression",
+      "depends_on": [
+        "O-memo-baseline"
+      ],
+      "source": "research/benchmarks/NEXT_EXPERIMENT.md",
+      "met": false,
+      "met_by": "experiment 008: +443% (sympy) and +29449% (egglog) median on unrelated, needed <= +10%"
+    },
+    {
+      "id": "X-strongest-baseline",
+      "criterion": "The baseline compared against is the strongest existing tool, not a naive one.",
+      "threshold": "optimised execution + memoisation, per NEXT_EXPERIMENT arm 2-5",
+      "depends_on": [
+        "O-memo-baseline"
+      ],
+      "source": "HANDOFF.md working practice 2",
+      "met": false,
+      "met_by": "experiment 008: the strongest baseline (free canonicalisation) WON, taking 81% of the available wins"
+    },
+    {
+      "id": "X-portable",
+      "criterion": "The cost-model result holds on more than one backend, so it is an architectural claim and not a NumPy fact.",
+      "threshold": "004's arm ranking and 006's operating point reproduce on a fusing backend",
+      "depends_on": [
+        "O-008-fusion"
+      ],
+      "source": "HANDOFF.md#next-experiment"
+    },
+    {
+      "id": "X-differentiating-claim",
+      "criterion": "A precise differentiating claim is written and compared against redun, gg, egglog, library-learning systems and build-system theory.",
+      "threshold": "gap #8 discharged",
+      "depends_on": [
+        "O-gap-8-evidence"
+      ],
+      "source": "research/ARCHITECTURAL_GAPS.md"
+    }
+  ],
+  "abandon_criteria": [
+    {
+      "id": "A-no-backend-holds",
+      "criterion": "If no backend shows the claimed advantage over the best existing tool, the cost-model line is a local optimisation and not an architecture.",
+      "depends_on": [
+        "O-008-fusion",
+        "O-memo-baseline"
+      ],
+      "source": "HANDOFF.md#next-experiment"
+    },
+    {
+      "id": "A-numpy-specific",
+      "criterion": "If 006's cheap-oracle operating point is NumPy-specific, the standing recommendation shrinks to 'the cost model must match the backend's cost structure' and stops being a contribution.",
+      "depends_on": [
+        "O-008-fusion"
+      ],
+      "source": "experiments/FINDINGS.md#006--what-is-the-cheapest-sufficient-oracle-reverses-005"
+    }
+  ]
+}

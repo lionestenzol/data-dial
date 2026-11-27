@@ -24,10 +24,19 @@ def pack_bits(flags: Sequence[bool]) -> bytes:
 
 
 class Device:
-    def __init__(self, name: str, root: str | Path, thumbs=None):
+    def __init__(self, name: str, root: str | Path, thumbs=None,
+                 generators=None, provenance=None):
         self.name = name
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
+        # The regenerate arm's two preconditions, one per side:
+        #  - can_generate: generators this device has installed (B's "oven").
+        #    Default: any registered generator (same binary on both sides).
+        #    Pass an explicit set (e.g. set()) to model a device that lacks one.
+        #  - provenance: path -> GenRecipe that A kept instead of discarding.
+        from .generators import REGISTRY
+        self.can_generate = set(REGISTRY) if generators is None else set(generators)
+        self.provenance = dict(provenance or {})
         self.state = self.root / ".dial"
         self.store = ChunkStore(self.state / "store")
         self.cache = ChunkCache(self.state / "chunkcache.json")

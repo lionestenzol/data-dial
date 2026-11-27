@@ -1,7 +1,27 @@
 # Handoff
 
+**Read `GIR_SPEC.md` first, then `THESIS.md`** — GIR_SPEC.md is the generalized objective (realize X at B by any mechanism); THESIS.md is one mechanism within it (send the generator); this file is operational state.
+
 Read this first. It is the state of the work, what is proven, what is not,
 and the one experiment that comes next.
+
+**For status, run the ledger, not this file:**
+
+```
+.venv-research/bin/python -I experiments/objectives_status.py          # table + "Done when"
+.venv-research/bin/python -I experiments/objectives_status.py --drift  # + supersession watch
+```
+
+`research/OBJECTIVES.json` is the single source of truth for *where each
+objective stands*; this document is for *what the results mean*. The split
+exists because status kept drifting when it lived in prose: 005's
+recommendation was reversed by 006 while 005's own findings section still read
+as current advice, an earlier version of this file introduced an experiment as
+pending after it had been done, and three documents each claimed to name "the
+next experiment". The script fails if an objective marked closed cites
+evidence that does not exist, so a stale status is now an error rather than
+something a reader has to notice. **When an experiment closes an objective,
+update the ledger in the same commit.**
 
 ## What the project is
 
@@ -25,7 +45,15 @@ Two background documents, both written in this project:
 | `research/` | prior-art registry: 33 cards, capability matrix, gap list, verification ledger |
 | `research/findings/SELECTOR_GAP.md` | the key literature finding |
 | `research/findings/INDEPENDENT_RERUN.md` | the bundle's smoke test, re-run here |
-| `experiments/FINDINGS.md` | experiment log, 002 / 002b / 003 |
+| `research/OBJECTIVES.json` | **the objective ledger — what each objective is and where it stands** |
+| `experiments/objectives_status.py` | renders and validates the ledger; run it first |
+| `experiments/FINDINGS.md` | experiment log, 002 / 002b / 003 / 004 / 005 / 006 |
+| `experiments/EXP004_PREREGISTRATION.md` | 004's ten predictions, committed before the run |
+| `experiments/EXP005_PREREGISTRATION.md` | 005's seven predictions, and its ship criterion |
+| `experiments/EXP006_PREREGISTRATION.md` | 006's seven predictions, with its hinge declared |
+| `experiments/exp006_candidate_exprs.json.gz` | every admitted candidate's srepr, for re-timing on another backend |
+| `bench/corpus/`, `bench/fetch_corpus.sh` | 004's corpus (gitignored; rebuild from pinned SHAs) |
+| `research/benchmarks/CORPUS_MANIFEST.json` | corpus provenance + SHA256 |
 | `.venv-research/` | Python env with egglog, redun, wasmtime, stitch-core (gitignored) |
 
 Run experiments with `.venv-research/bin/python -I experiments/<file>.py`.
@@ -45,6 +73,52 @@ The venv was relocated, so its scripts' shebangs are broken — use
   slower than optimal at n=8192. One static weight table is wrong at one end
   of the range by construction. Measured per-machine costs match the oracle
   10/10. All six pre-registered predictions hit.
+- **Experiment 004** — the frequency question, answered. 539 decisions over
+  802 in-scope FPCores from FPBench and Herbie, suites assembled by the
+  floating-point accuracy community years before this project. Structural
+  cost is **exactly optimal at the median** and materially wrong (≥1.5x) on
+  **4.3%** of decisions, worst case 48.30x. 7 of 10 predictions hit.
+- **Experiment 005** — the targeting question. The 4.3% tail cannot be flagged
+  economically: best cheap rule needs **854.8 requests per expression** against
+  **1216.9** for not targeting at all and a bar of 200. A logistic over nine
+  zero-timing predicates reaches out-of-fold AUC 0.749 and still fails. The
+  cause is measured: `corr(oracle cost, waste) = 0.146`, so cheap predicates
+  track expression size, which drives what measuring costs but not how much
+  error there is. 5 of 7 predictions hit. **Superseded by 006 — its
+  recommendation to drop measured costing no longer stands.**
+- **Experiment 006 — reverses 005.** 005 assumed one oracle price. Lower it and
+  the problem dissolves: ranking candidates on **256-element probe arrays with
+  a single repeat** costs 55 ms across 536 decisions and breaks even in
+  **4.7 requests per expression**, bootstrap [1.9, 24.0], against the same
+  200-request bar. 5 of 7 predictions hit. **Scoped by 007 — that figure
+  charges evaluation only and holds only on a backend where evaluation is
+  cheap relative to compilation.**
+- **Experiment 007 — scopes 006.** 006 charged evaluation time only. Charge
+  compilation, on a C/gcc backend, and the same policy needs **5,733 requests
+  per expression**, bootstrap [4,247, 7,928], against the 200 bar — 29x over,
+  on the *generous* accounting that charges the oracle only the `k−1`
+  compilations a no-oracle policy would not have paid. 6 of 6 predictions hit.
+
+**Measured, and negative — read this before building on 003:**
+- **004 inverted the programme's central assumption.** Plain AST-size node
+  counting beat *both* a textbook static latency table *and* per-operator
+  measured cost: smaller tail (p95 1.451 vs 1.517 and 1.512), more
+  exact-oracle matches, less waste per decision. The 13.5 ms calibration has
+  **no break-even at all** — measured's waste per decision exceeds
+  ast_size's, so measuring bought negative value.
+- The reason is a dissociation worth carrying forward: the weighted models
+  **predict runtime better** (Spearman 0.913 and 0.904 against ast_size's
+  0.836) and **select worse**. Selection ranks a handful of equivalent forms
+  inside one candidate set — local near-ties — and a globally better-calibrated
+  model can systematically mis-rank exactly those. **Global fit is the wrong
+  figure of merit for a selector.** 004 would have concluded the opposite had
+  it scored fit instead of regret.
+- Cost-model **granularity and counting discipline beat measurement**. Tree
+  counting improved every arm (ast_size p95 1.451 → 1.309) because `lambdify`
+  does no CSE and so really evaluates trees; one `pow_int` weight cannot
+  encode that NumPy does `a**2` faster than `a*a` but `a**3` slower than
+  `a*a*a`, and on the 153 decisions with an `x*x` candidate exact-oracle match
+  fell to 20.3% for both weighted arms against ~77% elsewhere.
 
 **Measured, and negative:**
 - **Experiment 002** — automatic discovery of reusable substructure works
@@ -52,6 +126,58 @@ The venv was relocated, so its scripts' shebangs are broken — use
   real work. A fused primitive costs N^3 once and saves N^2 per use, so it
   repays after ~N uses; the workload sat inside its own break-even. 2 of 6
   predictions hit.
+
+**The central claim has now been tested, and it failed:**
+- **Experiment 008** ran `NEXT_EXPERIMENT.md` as designed — the first test of
+  the architecture's own claim rather than a component of it. Against the
+  design's declared thresholds: zero mismatches **PASS** (0/314, all arms);
+  ≥10% total-time improvement **FAIL** at **−4080%**; ≤10% unrelated
+  regression **FAIL** at +443% and +29449%. 8 of 9 predictions hit.
+- **A free trick beat the architecture.** Constant folding plus sorting
+  commutative operands — no algebra engine, no e-graph — captured **81%** of
+  the available equivalence wins. SymPy bought the remaining 13 of 70 for 14x
+  the cost; egglog bought fewer for 73x.
+- **The free trick also finds the cheapest form.** `memo_canon` executes
+  **2,866 operations — fewer than any other arm**, including the cost-aware
+  one at 3,536. So the algebra engine has no form advantage to sell, and
+  charges 73x the normalisation time (1,964 ms against 27 ms) for a 1.23x
+  worse form. No break-even at any operation cost.
+  *Corrected:* an earlier version of this said normalisation makes execution
+  worse. That is true only of `sympy.expand`, which is a canonical rather than
+  a cheap form; egglog's smallest-term extraction **shrinks** expressions
+  (0.71x direct). The user raised the objection; the conclusion survived it
+  but the stated mechanism did not.
+- **The accumulating e-graph does not run.** It is the architecture's own
+  described design, and with ring axioms plus constant folding it aborts on
+  memory; the band where it both canonicalises and fits is 2 saturation
+  iterations on six expressions.
+- **What survives.** The only positive result for the central bet is still the
+  v1 sync simulator, where the artifact is **large** and transfer dominates.
+  008 shows the mechanism loses where the artifact is small and execution is
+  cheap. So the surviving claim is about artifacts expensive to transfer or
+  regenerate — **not** about choosing among equivalent recipes. That is far
+  narrower than what this document said above, and it is where any further
+  work should go.
+
+**Retracted — read this before citing the literature screen:**
+- The programme's opening claim, that egg and Stitch *document* the
+  structural-proxy gap, is **unsourced and now retracted**. Both quotes in
+  `research/findings/SELECTOR_GAP.md` were our own prior-art card
+  `limitations` fields, promoted into upstream warnings. Verified at source:
+  egg @`73975c9` never mentions cost and latency together anywhere in its
+  repository or rustdoc; Stitch @`350804b` discusses only its own search
+  runtime. The claim is probably true and 004 measured it — but it was our
+  hunch, carried through four experiments as though someone else had said it.
+- **The screen contains no floating-point prior art at all**, while the corpus
+  is FPBench/Herbie. OpTuner, Herbie-as-prior-art, Saiki, FPTuner, Daisy,
+  Precimonious are all absent, and the card titled "Salsa" is the unrelated
+  Rust crate. If OpTuner already selects by measured speed and error on
+  FPBench, the novelty claim is gone. See `O-fp-prior-art`.
+- **The timing cannot bear the weight put on it.** This machine has no
+  virtualised PMU and no `cpufreq`, so frequency and throttling are
+  unobservable, and every noise floor in 004–007 was measured back-to-back in
+  one process. 004's headline is a 4.5% p95 gap. `llvm-mca` and `cachegrind`
+  are installed and unused. See `O-measurement-validity`.
 
 **Established by reading, not by us:**
 - Cost-driven selection among equivalent representations already exists three
@@ -74,19 +200,127 @@ static table is wrong and never repays where it is right — and that is
 exactly where measuring costs most, because calibration scales with the
 problem while the saving goes to zero.
 
-## Next experiment, and it is the honest one
+004 adds the condition that rule was missing: **and only if the thing you
+measure is the thing that drives cost.** Per-operator latency, measured in
+isolation on the real machine, is not that thing for array code — and
+measuring it carefully made selection worse than counting nodes. 003's win
+came from an *asymptotic* difference (O(n²) against O(n log n)) that no
+weight table can encode; it did not come from knowing operator latencies
+accurately. Those are different claims, and only the first survives 004.
 
-003's domain was *chosen* because the proxy had to fail in it. 94x is an
-existence proof, not a frequency claim. The next question cannot be stacked
-in our favour:
+The scope of the whole mechanism is now measured, not assumed: **a tail-risk
+fix.** 95% of real decisions have nothing to win, and the 48x case exists but
+is rare. Perfect selection is also unaffordable — timing every candidate costs
+162x simply running the best form — so cheapness of the cost model, not its
+accuracy, is the binding constraint.
 
-> **How often is structural cost wrong on a workload nobody picked in
-> advance?**
+005 then looked for the exit and 006 found it somewhere else entirely.
 
-Take a corpus of real expressions or programs that somebody else wrote, run
-all three cost arms, and report the distribution of regret — not the maximum.
-If structural cost is near-optimal 95% of the time, the measured-cost
-mechanism is a niche fix and the architecture should say so.
+005 established that the tail cannot be *targeted*: no cheap predicate
+separates it, because expression size drives what measuring costs but not how
+much error there is (`corr(oracle cost, waste) = 0.146`), so flagging spends
+budget in proportion to price rather than return. That finding stands.
+
+006 showed the question was wrong. 005 was trying to target a price that
+should simply have been lowered. **A single-repeat oracle ranking candidates
+on 256-element arrays recovers ~90% of the available waste for ~1/550th of the
+cost, breaking even in 4.7 requests per expression.** A cheap oracle on *every*
+decision (4.7) beats perfect targeting of the expensive one (11.7). The
+detector problem 005 could not solve does not need solving.
+
+So the standing recommendation is **conditional on the backend**, and 007 is
+what makes it conditional:
+
+> **Measured cost selection is viable only where evaluation is cheap relative
+> to compilation.** Where it is — interpreted or vectorised backends — run a
+> cheap oracle on every decision, with probe arrays two orders of magnitude
+> smaller than the deployed size, one timing repeat, and no detector; it
+> repays in ~5 requests. Where candidates must be compiled to be timed, it
+> does not: the oracle needs ~5,700 requests to repay, and the structural
+> model is the only affordable selector — which is the one 004 found was the
+> better selector anyway.
+
+The prize itself is backend-independent, which is what makes this a scoping
+result rather than a dead end: structural selection leaves **16.31%** of
+runtime unclaimed under compiled C against **14.91%** under NumPy. The waste
+is real on both. Only the cost of *finding* it moves, and it moves by three
+orders of magnitude. 006's cheap-probe trick is inert under a compiler —
+break-even varies 1.011x across probe sizes, because one compiled artifact
+serves both the probe and the deployed run.
+
+The mechanism behind it is worth stating because it generalises: **a noisy
+oracle mis-picks among near-ties, and near-ties are by definition the choices
+with nothing to lose.** At R=1 the oracle picks a non-best candidate on 22.9%
+of decisions and still captures 91.6% of the waste. Mis-pick rate is the wrong
+metric. Recovered waste is the right one.
+
+## Next experiment
+
+004, 005 and 006 settled the measured-cost line: structural cost is wrong 4.3%
+of the time, the tail cannot be targeted, and it does not need to be because a
+cheap oracle applied everywhere repays in ~5 requests.
+
+**One experiment is queued. B is the only thing standing between this and a
+defensible claim**, and
+it threatens 004 and 006 together.
+
+**B. Does any of this survive a backend where operator count stops tracking
+cost?** Everything measured so far lives in one regime: vectorised NumPy with
+no CSE, where runtime is near-linear in operator count including temporaries.
+Two of the programme's load-bearing results may be artifacts of exactly that.
+004's inversion — node counting beating measured per-operator cost — is
+suspicious precisely because counting nodes nearly counts memory passes there.
+And 006's probe-transfer result needs the small-array ranking to predict the
+large-array ranking, which is plausible when cost is linear in operator count
+and much less so when a compiler fuses the whole expression into one pass.
+
+Re-time the identical candidate sets (their `srepr`s are saved, so no
+regeneration) through Numba, JAX, or C via Cython, and re-run 004's three arms
+and 006's probe grid. Pre-register separately for the two claims, because they
+can fail independently. Charge compilation this time: 006 charged evaluation
+time only, which is right for an already-compiled candidate and wrong for a
+JIT where compiling each candidate in order to time it could dominate the
+oracle's entire cost — and that single term could undo 006 on its own.
+
+If the arms re-rank there, 004's conclusion shrinks to "the cost model must
+match the backend's cost structure," and 006's operating point becomes
+NumPy-specific rather than architectural.
+
+**Superseded, do not redo:** the frequency question (004), the targeting
+question (005 — and 006 makes targeting unnecessary, so do not look for better
+tail predicates), and the oracle-price question in this backend (006).
+
+**Also worth knowing before the next run:** the waste is pathologically
+concentrated — one decision holds 38.8% of it, the top ten hold 85.9%. Every
+recovered-waste fraction in 006 therefore has a wide bootstrap interval, and
+the ranking among probe sizes is not resolvable at this sample size. Only the
+headline survives it, because its margin is 8x even at the interval's worst
+end. A backend comparison will need either many more decisions or a
+waste-weighted design that stops treating 536 decisions as 536 independent
+observations.
+
+## Older items never closed
+
+These predate 004 and are dormant, not finished. They concern **different
+mechanisms** from the cost-model line, so B does not subsume them.
+
+- **Recursive composition** (named in 002's follow-up, never run) — primitives
+  built from primitives, testing whether the substrate gets cheaper to extend
+  as it grows.
+- **Cross-workload transfer** (same) — discover on workload A, evaluate on
+  workload B from a different motif set over the same operators. The
+  difference between compressing a known distribution and accumulating
+  reusable capability.
+- **Economic benefit beyond an optimised cache**
+  (`research/benchmarks/NEXT_EXPERIMENT.md`, "designed, not executed") — the
+  whole architecture against a strong memoisation baseline, not just the cost
+  model. This is the one that would test the *architecture's* claim rather
+  than one component of it.
+
+`research/ARCHITECTURAL_GAPS.md` lists 8 further gaps, but those are
+specification work rather than measurements. Gaps #3 (resolution policy) and
+#4 (end-to-end economics) are now partly answered by 004–006 and should be
+rewritten to say what those experiments settled.
 
 ## Working practices that are load-bearing
 
@@ -111,6 +345,46 @@ document result "level with rsync" and reported a zero on photographs that
 was an artifact of its own byte-level chunker. Treat its confidence about
 individual pieces as reasonable and its judgement about whether combining
 them is worth more than the sum as poorly calibrated.
+
+004 and 005 continued the pattern and sharpened it. All three of its misses ran the
+same way: it assumed a measured or hand-weighted cost model must beat counting
+nodes (T5), that calibration would amortise (T9), and it wrote T10's predicate
+so that T5's assumption was buried inside it — a prediction that could not
+fail cleanly because it presupposed another one. It also over-estimated how
+often structural cost is wrong, by 2.3x. The directional bias is now
+**over-crediting the mechanism the programme is invested in**, including in
+how the test itself is specified. Two safeguards earned their place in 004 and
+should be kept: write each predicate so it depends on exactly one claim, and
+score predictions with a script that runs off the results file rather than by
+reading the numbers and narrating. 004's tautological hypothesis test, left
+labelled in the analysis script, is what the unaided version looks like.
+
+005 ran the same way on its two misses — both over-credited the cheap signals
+— but its structural safeguards held: the ship criterion was economic and
+fixed in advance, so FAIL was unarguable once the number came in, and the
+mechanism behind the failure was *tested* (the size confound) rather than
+asserted, which is the specific error 004 made. Keep pre-registering a
+decision criterion with a number in it. It is what let 005 end a line of work
+instead of extending it.
+
+**006 broke the pattern, and in the opposite direction.** Both its misses
+(V5, V6) *under*-credited the mechanism: it predicted small probe arrays would
+transfer poorly and they transferred at 91.9%, and it named repeat reduction
+as the rescue when small probes beat that by 27x. After three experiments of
+over-optimism, the correction had over-shot into pessimism about a cheapening
+it had not tested. The durable lesson is narrower than "Claude is optimistic":
+**its errors cluster wherever it has not actually measured the thing, in
+whichever direction its last correction pointed.** The fix is not a standing
+prior about direction. It is noticing which quantity in the design has never
+been measured and measuring that one first — in 006 that was the oracle's own
+price, which three experiments had carried as a constant without ever asking
+what set it.
+
+One more habit earned its place in 006: **report the bootstrap, not just the
+point estimate.** Its headline survives resampling (4.7 requests, worst end
+24, against a bar of 200) while three of its subsidiary claims do not. Without
+that check the write-up would have asserted a probe-size ranking the data
+cannot support.
 
 ## Environment facts
 

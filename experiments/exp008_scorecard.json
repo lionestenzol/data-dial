@@ -1,0 +1,72 @@
+{
+  "hits": 8,
+  "total": 9,
+  "checks": [
+    {
+      "tag": "Y1",
+      "claim": "zero mismatches across all implemented arms",
+      "verdict": "hit",
+      "actual": "direct:0, memo:0, memo_canon:0, memo_sympy:0, memo_egglog:0",
+      "note": ""
+    },
+    {
+      "tag": "Y2",
+      "claim": "arm 2 avoids re-execution on 70-75 requests",
+      "verdict": "hit",
+      "actual": "70 hits of 314 requests",
+      "note": ""
+    },
+    {
+      "tag": "Y3",
+      "claim": "free canonicalisation captures >=50% of the equiv_form misses",
+      "verdict": "hit",
+      "actual": "57 extra hits over arm 2 = 81% of the 70 equiv_form requests",
+      "note": ""
+    },
+    {
+      "tag": "Y4",
+      "claim": "NO normalising arm reaches >=10% total-time improvement on primary",
+      "verdict": "hit",
+      "actual": "best baseline 1.09ms vs best normalising 45.37ms = -4080.2% (threshold needs >= +10%)",
+      "note": ""
+    },
+    {
+      "tag": "Y5",
+      "claim": "arms 4 and 5 are >10x slower in total time than arm 3",
+      "verdict": "hit",
+      "actual": "memo_sympy 11.3x, memo_egglog 57.6x of memo_canon (34.3ms)",
+      "note": ""
+    },
+    {
+      "tag": "Y6",
+      "claim": "arms 4/5 regress >10% median on the unrelated split",
+      "verdict": "hit",
+      "actual": "memo_sympy +443%, memo_egglog +29449% median vs arm 2",
+      "note": ""
+    },
+    {
+      "tag": "Y7",
+      "claim": "break-even op cost at which arm 4 beats arm 3 is >=100us/op",
+      "verdict": "MISS",
+      "actual": "NO break-even found up to 10000us/op; ratio plateaus -> 0us:64.08x, 1us:10.02x, 10us:3.43x, 100us:2.96x, 1000us:2.99x, 10000us:3.00x",
+      "note": "stronger negative than predicted: the prediction assumed a break-even EXISTS. It does not, because SymPy's expanded normal form executes MORE operations (8612 vs 4983 for plain direct evaluation), so making operations costlier hurts the normalising arm faster than it helps it."
+    },
+    {
+      "tag": "Y8",
+      "claim": "on adversarial requests an arm times out or node count grows >=10x",
+      "verdict": "hit",
+      "actual": "memo_sympy net node growth +12998 across all requests; memo_egglog skipped 117 requests over its 40-node cap; timeouts sympy=0 egglog=0",
+      "note": ""
+    },
+    {
+      "tag": "Y9",
+      "claim": "arm 3 retains >=10% fewer cache entries than arm 2",
+      "verdict": "hit",
+      "actual": "arm 2 244 entries, arm 3 187 = +23%",
+      "note": ""
+    }
+  ],
+  "improvement_primary": -40.80191735939013,
+  "breakeven_op_cost_us": null,
+  "worst_unrelated_regression": 294.4932081359965
+}

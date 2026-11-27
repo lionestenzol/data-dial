@@ -1,0 +1,57 @@
+{
+  "hits": 5,
+  "total": 7,
+  "checks": [
+    {
+      "tag": "Z1",
+      "claim": "each of 4 mechanisms is the pick for >=1 file at some budget",
+      "verdict": "hit",
+      "actual": "mechanisms used across sweep: ['cache', 'delta', 'recompute', 'transfer']",
+      "note": ""
+    },
+    {
+      "tag": "Z2",
+      "claim": "at T=1s selector moves <=10% of always-transfer (>=10x)",
+      "verdict": "MISS",
+      "actual": "selector/transfer = 0.241 (4.1x reduction), predicted >=10x",
+      "note": "MISS is corpus-composition: only 20/72 files are recompute-eligible, so the aggregate is 4.1x though per-photo recompute is 1464x. The mechanism is not weaker than predicted; the pile has less regenerable mass than 10x needs."
+    },
+    {
+      "tag": "Z3",
+      "claim": "at T=1s selector <=50% of rsync AND entire margin is the recompute regime",
+      "verdict": "hit",
+      "actual": "selector/rsync = 0.248 (beats rsync 4.0x); remove recompute -> 0.960 of rsync (within 5%: True)",
+      "note": ""
+    },
+    {
+      "tag": "Z4",
+      "claim": "at T=0 selector within 5% of always-delta",
+      "verdict": "hit",
+      "actual": "selector/rsync at T=0 = 1.029",
+      "note": "Artifact: at literally T=0 even delta/cache are inadmissible (nonzero apply/hash compute), so the selector falls to transfer and is 2.9% WORSE than always-delta. The clean null holds at T=1ms: selector/rsync=0.960."
+    },
+    {
+      "tag": "Z5",
+      "claim": "on incompressible files no mechanism beats transfer by >5%",
+      "verdict": "hit",
+      "actual": "best saving on any incompressible file = 0.0%",
+      "note": ""
+    },
+    {
+      "tag": "Z6",
+      "claim": "every photogen file regenerates byte-exact; 0 disqualified",
+      "verdict": "hit",
+      "actual": "recompute disqualified: 0 of 20",
+      "note": ""
+    },
+    {
+      "tag": "Z7",
+      "claim": "per-file recompute compute break-even varies >=10x",
+      "verdict": "MISS",
+      "actual": "regen_ms spread = 1.87x (38-72ms)",
+      "note": "MISS by design: all photos were generated at one fixed size (768x576), so regen time barely varies. The BYTE crossover (recipe ~59B vs transfer ~86KB) is huge and real; the COMPUTE break-even is narrow only because the corpus fixed the size."
+    }
+  ],
+  "sel_vs_rsync_1s": 0.2480269164757048,
+  "margin_is_recompute": 0.9597542016574327
+}

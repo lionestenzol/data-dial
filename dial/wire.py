@@ -39,7 +39,7 @@ class LinkDown(Exception):
 @dataclass
 class Message:
     direction: str
-    form: str                      # manifest|have|chunk_query|key|recipe|thumb|raw_chunk
+    form: str                      # manifest|have|chunk_query|key|recipe|generate|thumb|raw_chunk
     path: str = ""
     step: Optional[int] = None
     body: bytes = b""                                  # keys, recipes, manifests

@@ -6,3 +6,13 @@ bench/
 research/experiments/.venv/
 research/experiments/*.db
 research-incoming/
+
+# exp004 corpus is vendored under bench/corpus (pinned by SHA in the manifest),
+# but the fetch script that rebuilds it is tracked.
+!bench/fetch_corpus.sh
+experiments/exp006_timings.json
+experiments/exp007_results.json
+experiments/exp008_results.json
+experiments/exp009_results.json
+experiments/exp010_results.json
+experiments/exp011_results.json

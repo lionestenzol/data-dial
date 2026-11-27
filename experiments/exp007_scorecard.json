@@ -1,0 +1,64 @@
+{
+  "hits": 6,
+  "total": 6,
+  "checks": [
+    {
+      "tag": "W1",
+      "claim": "mean compile time >= 100x mean evaluation time",
+      "verdict": "hit",
+      "actual": "compile 46.8 ms vs eval 403.7 us = 116x",
+      "note": ""
+    },
+    {
+      "tag": "W2",
+      "claim": "gross accounting: break-even > 200 requests",
+      "verdict": "hit",
+      "actual": "7440 requests (107858 ms oracle, 14.498 ms waste)",
+      "note": ""
+    },
+    {
+      "tag": "W3",
+      "claim": "DECISIVE - marginal accounting (k-1 compiles): break-even > 200",
+      "verdict": "hit",
+      "actual": "5733 requests, bootstrap 95% [4247, 7928]   (006-style eval-only on this backend: 63.7)",
+      "note": ""
+    },
+    {
+      "tag": "W4",
+      "claim": "marginal break-even in [1,000, 50,000] requests",
+      "verdict": "hit",
+      "actual": "5733 requests",
+      "note": ""
+    },
+    {
+      "tag": "W5",
+      "claim": "waste as a fraction of runtime on C is within 3x of NumPy's",
+      "verdict": "hit",
+      "actual": "C 16.31% of runtime vs NumPy 14.91% = 1.09x",
+      "note": ""
+    },
+    {
+      "tag": "W6",
+      "claim": "break-even varies <1.2x across probe sizes (compilation dominates)",
+      "verdict": "hit",
+      "actual": "256:5672  1024:5674  4096:5686  deployed:5733   spread 1.011x",
+      "note": ""
+    }
+  ],
+  "breakeven": {
+    "eval_only": 63.686284206384734,
+    "marginal": 5732.664792679357,
+    "gross": 7439.658751300801,
+    "bootstrap95": [
+      4246.888646222798,
+      7927.73817050829
+    ],
+    "by_probe": {
+      "256": 5671.533356794922,
+      "1024": 5674.256736039297,
+      "4096": 5685.810177582355,
+      "deployed": 5732.664792679357
+    }
+  },
+  "n_decisions": 538
+}
