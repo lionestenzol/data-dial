@@ -72,18 +72,20 @@ See `research/RESEARCH_INDEX.json` for the cards.
 |---|---|---|
 | 01 recursive info space | grammar/SLP compression (Sequitur, Re-Pair), L-systems, MDL/Kolmogorov | partially carded (grammar-compression, MDL) |
 | 02 temporal address space | counter-based PRNGs (Random123/Philox/Threefry), jump-ahead LCG/PCG, fast exponentiation | **gap** |
-| 03 multi-state config | residue number systems, CRT, Cartesian/factored state | **gap** |
+| 03 multi-state config | residue number systems, CRT; **set reconciliation (IBLT)** for diffs | carded (DR-001) |
 | 04 relational addressing | delta/diff coding, invariant features | partial (dial, rsync) |
 | 05 constraint intersection | SAT/SMT, symbolic execution, program synthesis, egg/egglog | partially carded (egglog, Souper) |
-| 06 exact realization | Slepian–Wolf, delta encoding, content-defined chunking | **gap (DSC)** |
-| 07 shared interpretive foundation | **distributed source coding**, semantic communication, fountain/rateless codes | **gap (DSC) — the core** |
-| 08 capability activation | RPC, content-addressable computation, function shipping | partial (redun) |
-| 09 shared capability provisioning | reproducible builds, Nix, Bazel RE, Wasmtime | carded |
+| 06 exact realization | Slepian–Wolf; **rsync/RDC/casync delta family** | carded (DR-001) |
+| 07 shared interpretive foundation | **distributed source coding**, channel simulation, semantic comms | carded (DSC) |
+| 08 capability activation | RPC, content-addressable computation, **Named Function Networking** (closest whole-vision match) | carded (DR-001) |
+| 09 shared capability provisioning | reproducible builds, Nix, Bazel RE, Wasmtime, **CRDTs** (convergent state) | carded |
 | 10 infrastructure bypass | content addressing (IPLD/IPFS), build-graph shortcutting | partial |
 
-Biggest gaps, in priority order: **distributed source coding (06/07)** — the
-formal home of the whole objective; **counter-based/jump-ahead generation
-(02)**; **residue/CRT factored state (03)**.
+Node investigation CLOSED by `research/DR-001.md` (external pass): all ten
+nodes classified, verdict **Stopping Condition C/D** — no new mathematics
+required, the single residual gap is a **general cross-type mechanism-selection
+layer** (the dial, generalized). Next action is the P0 benchmark (`O-crossover`),
+not more taxonomy.
 
 ## Disposition (§10), honest first cut
 

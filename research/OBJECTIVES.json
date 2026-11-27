@@ -350,10 +350,10 @@
     },
     {
       "id": "O-crossover",
-      "objective": "Draw the artifact-vs-generator cost curve and show the dial picks the cheaper side at every point.",
+      "objective": "P0 benchmark: measure receiver overlap/recomputability on real workloads and the crossover between full-transfer, delta, recompute and cache - and whether a general selector beats static rules.",
       "status": "dormant",
       "stated_in": "THESIS.md#the-experiment-that-was-never-run",
-      "note": "THE thesis experiment, never run. 002-008 all tested selection among equivalent expression FORMS - a sub-tactic. The real selection is artifact-vs-generator per item on a network-vs-compute cost model, tested once (the v1 sim, day one) and won. One workload spanning cheap->expensive artifacts; three arms send-artifact / send-rsync-delta / send-generator-and-rebuild; metric total bytes + receiver compute + verification; byte-exact; baseline rsync, which already nearly tied on documents. Every prior result is a point on this curve: 008 is the cheap end (bytes win), v1 sim the expensive end (generator wins 78 vs 285 MB), rsync-on-documents the crossover. Under GIR this is the DIAL within the GENERATE mechanism; it must be measured against the distributed-source-coding bound H(X|K_B), not just against rsync (O-dsc-position)."
+      "note": "Promoted to THE next action by DR-001's P0 itinerary, which matches this exactly. The identified gap (D) is a general mechanism-selection layer - the dial, generalized past artifact-vs-generator to transfer/delta/recompute/cache/generate/sync. DR-001's disposition: BENCHMARK before building it; prove discovery/selection overhead < savings. Baseline is rsync (which kept tying because it already does the general objective). Measure the WHOLE critical path incl. provisioning/hashing/verification, not signal size. Must position results against H(X|K_B)."
     },
     {
       "id": "O-gir-frame",
@@ -372,14 +372,41 @@
       "objective": "Position GIR against distributed source coding (Slepian-Wolf/Wyner-Ziv) - the proven bound for its objective.",
       "status": "dormant",
       "stated_in": "GIR_SPEC.md#the-prior-art-9-demands-be-found-before-any-synthesis",
-      "note": "Section 9 requires finding existing generalized architectures before synthesis. DSC proves X compresses to H(X|K_B) with side info at the decoder - the formal home of the whole objective, and it was missing from the 35-card screen. rsync is a practical instance, which is why it kept tying the dial. Any novelty claim must be stated as a delta from this bound (the per-object dial + exact cross-generator reconstruction), not as beating transmission. Blocked in practice by arxiv being unreachable; the bound itself is textbook and carded."
+      "note": "Section 9 requires finding existing generalized architectures before synthesis. DSC proves X compresses to H(X|K_B) with side info at the decoder - the formal home of the whole objective, and it was missing from the 35-card screen. rsync is a practical instance, which is why it kept tying the dial. Any novelty claim must be stated as a delta from this bound (the per-object dial + exact cross-generator reconstruction), not as beating transmission. Blocked in practice by arxiv being unreachable; the bound itself is textbook and carded. CORROBORATED by DR-001, which independently names Slepian-Wolf/Wyner-Ziv as the formal core and rsync as the practical instance."
     },
     {
       "id": "O-node-investigation",
       "objective": "Classify established mechanisms for all ten GIR nodes; mark proven/available/gap/impossible per section 9.",
-      "status": "dormant",
+      "status": "closed",
       "stated_in": "research/GIR_SPEC_FULL.md#9-required_investigation",
-      "note": "First pass done in GIR_SPEC.md node table. Biggest gaps: distributed source coding (06/07), counter-based/jump-ahead generation (02, carded), residue/CRT factored state (03). Nodes 08/09 largely covered by existing cards (redun, Nix, Bazel, Wasmtime). Full node-by-node cards are the next research block if the user wants depth."
+      "note": "CLOSED by DR-001 (external pass, citations not verified in-session but all canonically-checkable claims hold). All ten nodes classified to established mechanisms with a disposition each. Verdict: no new mathematics required; Stopping Condition C/D. New prior art folded into the registry: IBLT/set-reconciliation, CRDTs, NFN, rsync/RDC/casync delta family. The single residual gap is a general cross-type mechanism-selection layer.",
+      "evidence": {
+        "experiment": "DR-001 external research pass",
+        "commit": "HEAD",
+        "findings_section": "research/DR-001.md"
+      }
+    },
+    {
+      "id": "O-selection-layer",
+      "objective": "Build a general cross-type mechanism-selection layer only if the P0 benchmark proves it beats static rules and existing selectors (Nix/Bazel/NFN).",
+      "status": "blocked",
+      "stated_in": "research/DR-001.md#verdict",
+      "blocked_by": [
+        "O-crossover"
+      ],
+      "note": "The single residual gap DR-001 identifies (Stopping Condition D). data-dial was a crude domain-specific instance (artifact-vs-generator). DR-001 disposition is explicit: do NOT build this before benchmarks show heterogeneity of receiver state + network/compute conditions creates enough value to justify it. Nix/Bazel/REAPI may already cover enough; NFN is the closest research architecture. ACQUISITION > REINVENTION."
+    },
+    {
+      "id": "O-disposition",
+      "objective": "Adopt DR-001's standing disposition: reuse first, integrate only where needed, benchmark before building a selector, keep transfer as fallback, document the arbitrary-unseen boundary as fundamental.",
+      "status": "closed",
+      "stated_in": "research/DR-001.md#disposition-standing-policy-for-the-project",
+      "evidence": {
+        "experiment": "policy adoption",
+        "commit": "HEAD",
+        "findings_section": "research/DR-001.md#disposition-standing-policy-for-the-project"
+      },
+      "note": "This is GIR section 8 (research policy) made operational, and it is the antidote to this project's documented failure mode. It governs all node work from here."
     }
   ],
   "exit_criteria": [
