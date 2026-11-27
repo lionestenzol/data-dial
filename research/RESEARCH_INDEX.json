@@ -592,5 +592,41 @@
     "additional_sources": "https://www.usenix.org/conference/atc19/presentation/fouladi",
     "evidence": "Documented; not locally executed",
     "checked_date": "2026-11-26"
+  },
+  {
+    "title": "OpTuner (Briggs & Panchekha)",
+    "url": "https://github.com/IanBriggs/OpTuner",
+    "capability": "Select a library implementation per call site by speed and accuracy",
+    "implementation_status": "Research artifact, Python + Z3 + FPTaylor; PLDI 2022",
+    "principle": "Error Taylor series give a linear error model per call site; Z3 Pareto search over a static per-implementation cost table",
+    "dependencies": "Z3, FPTaylor, libm variants (amdlibm, crlibm, glibc, openlibm, metalibm, mpfr, vdt, povray)",
+    "license_screen": "not screened",
+    "published_measurements": "PLDI 2022 abstract: 2.05x for negligible accuracy loss, up to 5.37x error-tolerant, 9% whole-program on POV-Ray; 216 implementations of sin/cos/tan/exp/log; 41 benchmarks from FPBench and Herbie suites. NOT reproduced here.",
+    "limitations": "Selects IMPLEMENTATIONS of sin/cos/tan/exp/log per call site, NOT algebraically equivalent forms of an expression - verified from implementations/all_costs.json at 6cb05d0, which is a flat cost-per-implementation table (cos_amdlibm 7.21, cos_crlibm 34.10, cos_povray 3.19). Cost model is a STATIC pre-measured table, not per-expression measurement. Analysis costs ~60s per benchmark.",
+    "integration_method": "Takes .fpcore input, same corpus format as experiments 004-008",
+    "custom_work_eliminated": "Accuracy-constrained implementation selection with a sound error bound",
+    "remaining_gap": "Does not address choosing among equivalent expression FORMS, which is what 003-008 studied",
+    "smallest_experiment": "Run ./bin/optuner on one of our 913 corpus cores and compare its chosen configuration against our arms",
+    "additional_sources": "https://arxiv.org/abs/2107.05761 (BLOCKED by this environment's network policy - abstract read via web search only)",
+    "evidence": "Source read at 6cb05d0 via git clone; paper NOT read (arxiv.org does not resolve here)",
+    "checked_date": "2026-11-27"
+  },
+  {
+    "title": "Semantic caching (query-equivalence caches)",
+    "url": "https://arxiv.org/html/2602.19811v1",
+    "capability": "Cache results keyed on query EQUIVALENCE rather than exact text",
+    "implementation_status": "Established database literature; 2026 OLAP system reported",
+    "principle": "Normalise the request, then key the cache on the normal form; escalate from text match to AST normalisation to semantic equivalence",
+    "dependencies": "n/a",
+    "license_screen": "not screened",
+    "published_measurements": "Reported hit rates 28.2% text, 55.6% AST normalisation, 82% semantic equivalence, on TPC-DS/SSB/NYC TLC; 85-90% backend compute reduction. NOT independently verified and NOT reproduced here.",
+    "limitations": "Its own canonicalisation is described as sorting commutative filters and normalising literals - the SAME technique our experiment 008 arm 3 independently invented. Reported that AST normalisation 'reduces but does not eliminate' variation. Optimal offline semantic caching reported NP-hard. Scope restricted to star/snowflake dashboard queries.",
+    "integration_method": "n/a - this is the literature our 008 mechanism belongs to",
+    "custom_work_eliminated": "The entire normalise-then-memoise design of experiment 008",
+    "remaining_gap": "THIS SCREEN'S BIGGEST MISS. Experiment 008 tested normalise-then-memoise without knowing this field exists, and independently reproduced both its standard cheap technique and its known limitation.",
+    "smallest_experiment": "Read the 2026 OLAP paper and compare its text/AST/semantic hit-rate ladder against our memo/memo_canon/memo_sympy arms",
+    "additional_sources": "https://arxiv.org/pdf/2606.19719 (BLOCKED here); 2008 survey 'Query Processing over Relational Databases with Semantic Cache' unverified",
+    "evidence": "Documented via web-search summaries only; NO paper read (arxiv.org does not resolve here)",
+    "checked_date": "2026-11-27"
   }
 ]

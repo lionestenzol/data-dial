@@ -335,9 +335,14 @@
     {
       "id": "O-fp-prior-art",
       "objective": "Screen the floating-point accuracy/performance literature the 33-card registry omits entirely.",
-      "status": "dormant",
+      "status": "closed",
       "stated_in": "research/PRIOR_ART.md",
-      "note": "The 33 cards are incremental computation, build systems, e-graphs, synthesis and compression - ZERO floating-point prior art, while the corpus is FPBench/Herbie. Absent: OpTuner ('Choosing Function Implementations for Speed and Accuracy'), Herbie as prior art, Saiki 'Combining Precision Tuning and Rewriting', FPTuner, Daisy, Precimonious, FP-Salsa, Casio. The card titled 'Salsa' is salsa-rs, the Rust incremental-computation crate - a NAME COLLISION, not the FP tool. Our own CORPUS_MANIFEST names Rosa/Daisy/Salsa/FPTaylor/Precimonious as corpus provenance and the screen never carried them over. OpTuner in particular selects implementations by measured speed AND error; if it does so on FPBench, this programme's novelty claim is gone. Blocked in practice by arxiv.org being unreachable - needs GitHub/docs.rs or another route."
+      "note": "PARTLY ANSWERED, and the answer splits. OpTuner (Briggs & Panchekha, PLDI 2022) is real and was missing from the screen, but it selects LIBRARY IMPLEMENTATIONS per call site, not algebraically equivalent expression forms - verified from its own implementations/all_costs.json at 6cb05d0, a flat cost-per-implementation table. So 003-008's question is NOT occupied. Two corroborations fell out: its cost model is a STATIC pre-measured table, i.e. a published tool in this space also declined to measure per-expression (supporting 004), and its analysis costs ~60s per benchmark (supporting 006/007 on analysis dominating). THE BIGGER MISS is semantic caching, an established database literature that experiment 008's whole design belongs to: a 2026 OLAP system reports hit rates 28.2% text / 55.6% AST / 82% semantic and describes its canonicalisation as sorting commutative filters and normalising literals - the same technique our arm 3 independently invented, with the same reported limitation. Cards written for both. NEITHER PAPER WAS READ: arxiv.org does not resolve in this environment, so both cards are search-summary evidence except OpTuner's source, which was read. Route that worked: raw.githubusercontent.com and git clone are reachable even though every paper host is not.",
+      "evidence": {
+        "experiment": "prior-art screen round 2",
+        "commit": "HEAD",
+        "findings_section": "research/RESEARCH_INDEX.json"
+      }
     },
     {
       "id": "O-measurement-validity",
