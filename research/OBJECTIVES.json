@@ -56,7 +56,7 @@
         "commit": "176ae70",
         "findings_section": "research/findings/SELECTOR_GAP.md#answer-it-exists-three-times-over"
       },
-      "note": "Yes, three times (Halide autoscheduler, OpenTuner, egg/egglog). Do not rebuild. Closed by reading, not by running."
+      "note": "Yes, three times (Halide autoscheduler, OpenTuner, egg/egglog). Do not rebuild. Closed by reading, not by running. PARTLY RETRACTED by O-premise-sourced: the claim that all three systems DOCUMENT this defect is unsourced. That cost-driven selection exists three times over stands; that its authors admitted the gap does not."
     },
     {
       "id": "O-002-discovery",
@@ -310,6 +310,32 @@
       "status": "spec-gap",
       "stated_in": "research/ARCHITECTURAL_GAPS.md",
       "note": "The gap that defines done-ness: 'a literature screen and tiny integration do not establish a new computational model, commercial freedom to operate or general speedup'. O-memo-baseline is the measurement it needs. Freedom-to-operate is explicitly NOT established (research/RIV_Research_Report.md section 8)."
+    },
+    {
+      "id": "O-premise-sourced",
+      "objective": "Is the premise that egg and Stitch documented the structural-proxy gap actually sourced?",
+      "status": "closed",
+      "stated_in": "research/findings/SELECTOR_GAP.md#the-one-line-in-the-cards-that-matters-most",
+      "evidence": {
+        "experiment": "primary-source audit",
+        "commit": "HEAD",
+        "findings_section": "research/findings/SELECTOR_GAP.md#the-one-line-in-the-cards-that-matters-most"
+      },
+      "note": "NO - RETRACTED. Both quotes were our own prior-art card limitations fields, promoted into warnings issued by upstream. Verified at source: egg @73975c9 has ONE mention of cost beside any performance word (the verb 'perform', src/extract.rs:51); its CostFunction rustdoc caveats only usize overflow and monotonicity. Stitch @350804b discusses only its OWN search runtime. The underlying claim is probably true and 004 measured it, but it was our hunch, not a citable upstream opening. egg's and Stitch's PAPERS remain unread - arxiv.org is blocked here."
+    },
+    {
+      "id": "O-fp-prior-art",
+      "objective": "Screen the floating-point accuracy/performance literature the 33-card registry omits entirely.",
+      "status": "dormant",
+      "stated_in": "research/PRIOR_ART.md",
+      "note": "The 33 cards are incremental computation, build systems, e-graphs, synthesis and compression - ZERO floating-point prior art, while the corpus is FPBench/Herbie. Absent: OpTuner ('Choosing Function Implementations for Speed and Accuracy'), Herbie as prior art, Saiki 'Combining Precision Tuning and Rewriting', FPTuner, Daisy, Precimonious, FP-Salsa, Casio. The card titled 'Salsa' is salsa-rs, the Rust incremental-computation crate - a NAME COLLISION, not the FP tool. Our own CORPUS_MANIFEST names Rosa/Daisy/Salsa/FPTaylor/Precimonious as corpus provenance and the screen never carried them over. OpTuner in particular selects implementations by measured speed AND error; if it does so on FPBench, this programme's novelty claim is gone. Blocked in practice by arxiv.org being unreachable - needs GitHub/docs.rs or another route."
+    },
+    {
+      "id": "O-measurement-validity",
+      "objective": "Re-judge 004-007's conclusions with instruments that have no timing noise.",
+      "status": "dormant",
+      "stated_in": "experiments/FINDINGS.md#honest-limits",
+      "note": "004's headline rests on a p95 regret gap of 1.451 vs 1.517 - 4.5% - from best-of-N perf_counter in ONE process, with every noise floor measured back-to-back in that same process. Verified about this machine: no virtualised PMU (/sys/bus/event_source/devices has no cpu node; perf_event_open(PERF_TYPE_HARDWARE) returns ENOENT), so hardware counters are permanently unavailable and installing perf would not help; and no cpufreq and no intel_pstate, so frequency and throttling are not merely uncontrolled but UNOBSERVABLE. Two zero-noise instruments ARE installed: llvm-mca 18.1.3 (host sapphirerapids) and cachegrind 3.22 (deterministic I refs). Plan: score the same candidates under wall clock, cachegrind I refs and llvm-mca, and report whether the winning arm changes with the oracle. Read Block RThroughput for vector-over-inputs and Total Cycles for serial scalar - mixing them yields a confidently wrong cost model."
     }
   ],
   "exit_criteria": [

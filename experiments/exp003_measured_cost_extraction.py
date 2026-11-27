@@ -4,7 +4,15 @@ WHY THIS ONE
     PRIOR_ART.md closed the question of whether cost-driven selection among
     equivalent representations exists. It does, three times over. But egg's
     own limitation field says "extracted cost need not predict latency" and
-    Stitch's says "shorter programs need not execute faster". Experiment 002
+    Stitch's says "shorter programs need not execute faster".
+
+    [CORRECTION 2026-11-27: those two lines are OUR prior-art cards' wording,
+    not statements by egg or Stitch. Verified absent from egg's repository and
+    rustdoc at 73975c9 and from Stitch's at 350804b. 003's design question
+    stands on its own, but it was not opened by an upstream admission. See
+    research/findings/SELECTOR_GAP.md.]
+
+    Experiment 002
     reproduced that defect from scratch: its structural metric improved 2.80x
     while its physical metric improved 1.06x.
 

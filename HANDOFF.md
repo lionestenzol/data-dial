@@ -125,6 +125,26 @@ The venv was relocated, so its scripts' shebangs are broken — use
   repays after ~N uses; the workload sat inside its own break-even. 2 of 6
   predictions hit.
 
+**Retracted — read this before citing the literature screen:**
+- The programme's opening claim, that egg and Stitch *document* the
+  structural-proxy gap, is **unsourced and now retracted**. Both quotes in
+  `research/findings/SELECTOR_GAP.md` were our own prior-art card
+  `limitations` fields, promoted into upstream warnings. Verified at source:
+  egg @`73975c9` never mentions cost and latency together anywhere in its
+  repository or rustdoc; Stitch @`350804b` discusses only its own search
+  runtime. The claim is probably true and 004 measured it — but it was our
+  hunch, carried through four experiments as though someone else had said it.
+- **The screen contains no floating-point prior art at all**, while the corpus
+  is FPBench/Herbie. OpTuner, Herbie-as-prior-art, Saiki, FPTuner, Daisy,
+  Precimonious are all absent, and the card titled "Salsa" is the unrelated
+  Rust crate. If OpTuner already selects by measured speed and error on
+  FPBench, the novelty claim is gone. See `O-fp-prior-art`.
+- **The timing cannot bear the weight put on it.** This machine has no
+  virtualised PMU and no `cpufreq`, so frequency and throttling are
+  unobservable, and every noise floor in 004–007 was measured back-to-back in
+  one process. 004's headline is a 4.5% p95 gap. `llvm-mca` and `cachegrind`
+  are installed and unused. See `O-measurement-validity`.
+
 **Established by reading, not by us:**
 - Cost-driven selection among equivalent representations already exists three
   times: Halide's autoscheduler, OpenTuner, egg/egglog extraction. Do not

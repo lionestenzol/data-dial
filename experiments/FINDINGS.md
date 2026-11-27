@@ -646,3 +646,83 @@ persistent compilation cache would change the arithmetic, and neither is tested.
   The diagnostic lesson: both runs died at the *same* core, which means
   deterministic, and one foreground run to capture the exit signal (135) was
   cheaper than the process-group theory it was first blamed on.
+
+## Primary-source audit — the premise was ours, not egg's
+Not an experiment. A verification of the claim every experiment from 003
+onward was built on, prompted by asking what a reviewer would check that we
+had not.
+
+`research/findings/SELECTOR_GAP.md` framed the programme's opening as a gap the
+upstream authors had identified and left open:
+
+> egg's limitation field reads: **"extracted cost need not predict latency"**
+> … both documents warn that the proxy does not track the physical quantity
+
+**Both quotations are ours.** They are the `limitations` field of our own
+prior-art cards — editorial compression we wrote — promoted into statements by
+egg and Stitch.
+
+Checked at source. **egg @`73975c9`** (2026-09-28), whole repository and
+rustdoc: exactly **one** mention of cost beside any performance word, and it is
+the verb "perform" — `src/extract.rs:51`, *"requires a cost function to
+performs its greedy search"*. The `CostFunction` documentation covers the
+`Cost` type's `PartialOrd` requirement, `NaN` panics, how to write a cost
+function, the `AstSize`/`AstDepth` built-ins, and exactly one caveat: that
+`AstSize` **"might overflow `usize`"**, so use `saturating_add` to stay
+monotonic. An arithmetic caveat. Nothing about latency, runtime, or any
+physical quantity. **Stitch @`350804b`**: every runtime and speed mention is
+about *Stitch's own* search time against DreamCoder, plus a note that
+`--max-arity` raises runtime. Nothing about whether learned abstractions
+execute faster.
+
+Unverified: both POPL papers. arxiv.org is blocked by this environment. But the
+retracted sentence claimed *documentation*, and the documentation does not say
+it.
+
+### What this breaks and what it does not
+The underlying claim is probably **true** — AST size does not track runtime,
+and 004 measured exactly that. The empirical findings of 002–007 rest on our
+own measurements and are untouched.
+
+What falls is the *warrant*: the argument that this was a known, citable gap
+its own authors had flagged, which is what made it look like an opening rather
+than a hunch. It was a hunch. A good one, but ours, and it was carried through
+four experiments and a research report as though someone else had said it.
+
+The irony is on the record in 004: when finally measured, the structural proxy
+turned out to be the **better** selector than measured per-operator cost. The
+premise attributed to egg is one our own data partly contradicts.
+
+### Two further holes found in the same pass
+- **The screen has no floating-point prior art at all.** All 33 cards are
+  incremental computation, build systems, e-graphs, synthesis and compression,
+  while the corpus is FPBench/Herbie. Absent: OpTuner ("Choosing Function
+  Implementations for Speed and Accuracy"), Herbie as prior art, Saiki,
+  FPTuner, Daisy, Precimonious, FP-Salsa. The card titled "Salsa" is
+  `salsa-rs`, the Rust incremental-computation crate — a **name collision**
+  with the floating-point tool. Our own `CORPUS_MANIFEST.json` names
+  Rosa/Daisy/Salsa/FPTaylor/Precimonious as corpus provenance and the screen
+  never carried them over. We adopted the accuracy community's corpus while
+  screening the incremental-computation community's tools. Tracked as
+  `O-fp-prior-art`; if OpTuner already selects by measured speed and error on
+  FPBench, this programme's novelty claim is gone.
+- **The measurements cannot bear the weight put on them.** 004's headline is a
+  p95 regret gap of 1.451 vs 1.517 — **4.5%** — from best-of-N `perf_counter`
+  in a single process, with every noise floor measured back-to-back in that
+  same process, which is the narrowest noise that exists. This machine has
+  **no virtualised PMU** (`perf_event_open(PERF_TYPE_HARDWARE)` → ENOENT, no
+  `cpu` node under `/sys/bus/event_source/devices/`), so hardware counters are
+  permanently unavailable; and **no `cpufreq`, no `intel_pstate`**, so
+  frequency and throttling are not merely uncontrolled but **unobservable**.
+  Two zero-noise instruments are installed and unused: **llvm-mca 18.1.3**
+  (host `sapphirerapids`) and **cachegrind 3.22** (deterministic `I refs`).
+  Tracked as `O-measurement-validity`.
+
+### Corrections applied
+`SELECTOR_GAP.md` carries the retraction at the point of the claim. The two
+card `limitations` fields in `PRIOR_ART.md`, `RESEARCH_INDEX.json` and
+`RESEARCH_INDEX.csv` are annotated `[OUR INFERENCE, not stated by …]` with the
+verified commit. `exp003_measured_cost_extraction.py`'s docstring, which quoted
+both lines as upstream statements, carries the correction. The CSV is now
+generated from the JSON rather than hand-synced, so those two copies cannot
+diverge again.

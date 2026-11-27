@@ -28,7 +28,7 @@ Checked 2026-11-26. All integration assessments and smallest experiments are ana
 - **dependencies:** Rust/Cargo
 - **license screen:** MIT
 - **published measurements:** POPL 2021 case studies; not reproduced
-- **limitations:** Rules supplied by developer; search growth; extracted cost need not predict latency
+- **limitations:** Rules supplied by developer; search growth; extracted cost need not predict latency *(the last clause is OUR INFERENCE, not stated by egg — verified absent from the repository and rustdoc at 73975c9; see research/findings/SELECTOR_GAP.md)*
 - **integration method:** Embed typed DSL and cost function
 - **custom work eliminated:** Custom e-graph and equality-saturation engine
 - **remaining gap:** Sound domain rules and measured costs
@@ -385,7 +385,7 @@ Checked 2026-11-26. All integration assessments and smallest experiments are ana
 - **dependencies:** Rust or stitch-core wheel
 - **license screen:** MIT; dataset licenses separate
 - **published measurements:** POPL 2023: 3–4 orders faster and 2 orders less memory than tested DreamCoder deductive learner
-- **limitations:** Optimizes DSL corpus structure; shorter programs need not execute faster
+- **limitations:** Optimizes DSL corpus structure; shorter programs need not execute faster *(the last clause is OUR INFERENCE, not stated by Stitch — verified absent from the repository at 350804b)*
 - **integration method:** Offline abstraction learner feeding versioned primitive library
 - **custom work eliminated:** Custom structural abstraction miner
 - **remaining gap:** Semantic validation and held-out net utility
