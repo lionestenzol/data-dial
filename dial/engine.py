@@ -15,6 +15,7 @@ from typing import Dict, Iterable, List, Optional, Sequence, Set
 from . import router, view
 from .checker import Receiver, Verdict
 from .device import Device, pack_bits
+from .peer import LocalPeer, Peer
 from .keys import EXACT, Key
 from .manifest import Manifest, PHOTO
 from .wire import HEADER_BYTES, Faults, Ledger, Link, LinkDown, Message
@@ -44,27 +45,25 @@ class RunResult:
 
 
 class Engine:
-    def __init__(self, a: Device, b: Device, ledger: Ledger,
+    def __init__(self, a: Device, b, ledger: Ledger,
                  faults: Optional[Faults] = None):
-        self.a, self.b = a, b
+        """`b` may be a Device (compat: auto-wrapped in LocalPeer) or a Peer
+        instance (SocketPeer for the socket transport)."""
+        self.a = a
         self.ledger = ledger
-        self.link = Link(ledger, faults)
-        self.rx = Receiver(b)
+        if isinstance(b, Peer):
+            self.peer: Peer = b
+        else:
+            self.peer = LocalPeer(b, ledger, faults)
         self.raw_done: Set[str] = set()
 
     # -- protocol bookkeeping --------------------------------------------
     def _send(self, msg: Message) -> Verdict:
-        got, rec = self.link.deliver(msg)
-        v = self.rx.apply(got)
-        rec["checker"] = "pass" if v.ok else "fail"
-        rec["reason"] = v.reason
-        return v
+        return self.peer.send_and_check(msg)
 
     def _charge_only(self, msg: Message) -> dict:
         """A message whose content needs no check (have-answers, queries)."""
-        _, rec = self.link.deliver(msg)
-        rec["checker"] = "pass"
-        return rec
+        return self.peer.send_only(msg)
 
     # -- phase 0: manifest and have-check ---------------------------------
     def exchange_manifest(self, man: Manifest) -> None:
@@ -90,8 +89,7 @@ class Engine:
         q = Message("A->B", "have_query", "", None,
                     body=b"".join(bytes.fromhex(w.key.hash) for w in wants))
         self._charge_only(q)
-        held = [self.b.store.has_key(w.key.kid) for w in wants]
-        bound = [self.b.settled(w.path, w.key.kid, w.file_key.kid) for w in wants]
+        held, bound = self.peer.have_answers(wants)
         self._charge_only(Message("B->A", "have", "", None,
                                   body=pack_bits(held + bound)))
         return ({w.path for w, ok in zip(wants, bound) if ok},
@@ -103,7 +101,7 @@ class Engine:
         q = Message("A->B", "chunk_query", "", None,
                     body=b"".join(bytes.fromhex(h) for h in hashes))
         self._charge_only(q)
-        bits = self.b.have_chunks(hashes)
+        bits = self.peer.chunk_answers(hashes)
         self._charge_only(Message("B->A", "have", "", None, body=pack_bits(bits)))
         return {h for h, ok in zip(hashes, bits) if ok}
 
@@ -178,10 +176,7 @@ class Engine:
         msg = Message("A->B", "raw_chunk", want.path, 4,
                       blobs=[(fk.hash, data, "raw")], kid=fk.kid,
                       note="raw fallback")
-        got, rec = self.link.deliver(msg)
-        v = self.rx.accept_raw_file(want.path, fk, got.blobs[0][1])
-        rec["checker"] = "fallback" if v.ok else "fail"
-        rec["reason"] = v.reason
+        self.peer.send_raw_fallback(msg, want.path, fk)
 
     def _attach_gen(self, want: router.Want) -> router.Want:
         """If A kept a recipe for this exact original and B can run it, mark the
@@ -190,7 +185,7 @@ class Engine:
         rec = self.a.provenance.get(want.path)
         if (rec is not None
                 and want.key.kid == want.file_key.kid
-                and rec.generator in self.b.can_generate):
+                and rec.generator in self.peer.can_generate):
             want.gen = rec
         return want
 
@@ -247,10 +242,10 @@ class Engine:
             t_open = (time.perf_counter() - t1) * 1000.0 / len(opened)
 
         self._remember(man)
-        rows = view.library(self.b, man)
+        rows = self.peer.library_rows(man)
         for r in rows:
             if r.path in files:
                 files[r.path].final = r.shown_as
         return RunResult(man, files, rows, opened, changed,
                          t_visible, t_open, falls,
-                         self.rx.regen_ms, self.rx.regen_count)
+                         self.peer.regen_ms, self.peer.regen_count)

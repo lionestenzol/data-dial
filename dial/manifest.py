@@ -33,6 +33,13 @@ class Entry:
             d["thumb_size"] = self.thumb_size
         return d
 
+    @classmethod
+    def from_wire(cls, d: dict) -> "Entry":
+        return cls(path=d["path"], size=int(d["size"]), kind=d["kind"],
+                   file_kid=d["file_kid"],
+                   thumb_kid=d.get("thumb_kid"),
+                   thumb_size=int(d.get("thumb_size", 0)))
+
 
 @dataclass
 class Manifest:
